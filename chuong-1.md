@@ -216,21 +216,429 @@ else:
 
 ---
 
-## Bài tập cuối chương (10+ bài, sưu tầm nhiều nguồn)
+## Bài tập cuối chương — Chương 1 (12 bài, có lời giải)
 
-| # | Tên bài | Nguồn | Độ khó | Kỹ năng luyện |
-|---|---|---|---|---|
-| 1 | Watermelon | Codeforces 4A | Dễ | Đọc đề, lột vỏ bài toán |
-| 2 | Weird Algorithm | CSES 1068 | Dễ | I/O cơ bản, mô phỏng |
-| 3 | Two Sum | LeetCode 1 | Dễ | Trích xuất bài toán lõi (Ví dụ 2, mục 1.1) |
-| 4 | Theatre Square | Codeforces 1A | Dễ-TB | Ước lượng công thức, tránh brute-force sai |
-| 5 | Missing Number | CSES 1083 | Dễ-TB | I/O nhanh với N lớn |
-| 6 | Increasing Array | Codeforces 1547B / tương tự | TB | Suy luận độ phức tạp từ 2 giới hạn |
-| 7 | Contains Duplicate | LeetCode 217 | TB | Chọn đúng cấu trúc dữ liệu theo N |
-| 8 | Chuỗi con tăng dài nhất liên tiếp | Đề HSG tỉnh (dạng phổ biến) | TB | Tương tự bài tập minh hoạ mục 1.1 |
-| 9 | Bin Packing (ước lượng độ phức tạp) | Codeforces 1526C1 | TB-Khó | Nhận diện giới hạn "ẩn" (Ví dụ 3, mục 1.2) |
-| 10 | Restaurant Customers | CSES 1619 | TB | Xử lý input nhiều dòng, edge case N=0 |
-| 11 | Sum of Two Values | CSES 1640 | TB | Kết hợp đọc đề + chọn cấu trúc dữ liệu |
-| 12 | Bài toán tổng hợp trong đề thi HSG Quốc gia (bảng ước lượng độ phức tạp với nhiều ràng buộc N, K, Q khác nhau) | Đề HSG QG các năm gần đây | Khó | Tổng hợp toàn bộ kỹ năng Chương 1 |
+---
 
-> **Gợi ý luyện tập:** giải theo đúng thứ tự bảng trên (độ khó tăng dần). Với mỗi bài, trước khi code, hãy tự viết ra: (1) bài toán lõi là gì, (2) N cho phép độ phức tạp nào, (3) cấu trúc dữ liệu/kỹ thuật dự kiến dùng — rồi mới bắt đầu code.
+### Bài 1 — Watermelon (Codeforces 4A) — Dễ
+
+**Đề bài (diễn giải):** Hai bạn nhỏ mua một quả dưa hấu nặng w kg. Họ muốn chia quả dưa thành 2 phần, mỗi phần có khối lượng là số nguyên **chẵn** (không cần bằng nhau), và mỗi phần phải có khối lượng dương (> 0). Hỏi có thể chia được như vậy không?
+
+**Input:** một số nguyên w (1 ≤ w ≤ 100).
+**Output:** in `YES` nếu chia được, `NO` nếu không.
+
+**Phân tích:** Tổng 2 số chẵn luôn là số chẵn → nếu w lẻ, chắc chắn "NO". Nếu w chẵn, chỉ cần tách w = 2 + (w-2); (w-2) cũng là số chẵn nếu w chẵn. Nhưng cần cả 2 phần dương → w = 2 không chia được (vì 2 = 1+1, mà 1 là số lẻ; hoặc 2 = 0+2 nhưng 0 không dương) → w phải chẵn **và** w > 2.
+
+**Lời giải:**
+```cpp
+#include <iostream>
+using namespace std;
+int main() {
+    int w; cin >> w;
+    cout << ((w % 2 == 0 && w > 2) ? "YES" : "NO") << "\n";
+}
+```
+```python
+w = int(input())
+print("YES" if w % 2 == 0 and w > 2 else "NO")
+```
+
+---
+
+### Bài 2 — Weird Algorithm (CSES 1068) — Dễ
+
+**Đề bài (diễn giải):** Cho số nguyên n. Áp dụng lặp lại quy tắc: nếu n chẵn thì n = n/2; nếu n lẻ thì n = 3n+1. Lặp cho đến khi n = 1. In ra toàn bộ dãy số n trải qua, kể cả giá trị đầu và giá trị 1 ở cuối (đây là bài toán liên quan đến giả thuyết Collatz nổi tiếng trong toán học).
+
+**Input:** một số nguyên n (1 ≤ n ≤ 10^6).
+**Output:** dãy các giá trị n trải qua, cách nhau bởi khoảng trắng.
+
+**Phân tích:** Mô phỏng trực tiếp theo đúng quy tắc đề cho, không cần tối ưu gì thêm — bài rèn kỹ năng vòng lặp + I/O cơ bản.
+
+**Lời giải:**
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int main() {
+    long long n; cin >> n;
+    cout << n;
+    while (n != 1) {
+        if (n % 2 == 0) n /= 2;
+        else n = 3 * n + 1;
+        cout << " " << n;
+    }
+    cout << "\n";
+}
+```
+```python
+n = int(input())
+print(n, end="")
+while n != 1:
+    n = n // 2 if n % 2 == 0 else 3 * n + 1
+    print("", n, end="")
+print()
+```
+
+---
+
+### Bài 3 — Two Sum (LeetCode 1) — Dễ
+
+**Đề bài (diễn giải):** Cho mảng số nguyên `nums` và một số nguyên `target`. Tìm chỉ số của 2 phần tử có tổng đúng bằng `target`. Đề đảm bảo luôn có đúng 1 cặp thoả mãn, và không được dùng lại cùng 1 phần tử 2 lần.
+
+**Input:** mảng `nums`, số nguyên `target`.
+**Output:** cặp chỉ số (i, j) thoả `nums[i] + nums[j] = target`.
+
+**Phân tích:** Brute-force O(n²) (thử mọi cặp) chấp nhận được nếu n nhỏ, nhưng cách tối ưu O(n): dùng hashmap lưu (giá trị → chỉ số) đã duyệt qua, với mỗi phần tử kiểm tra xem `target - nums[i]` đã xuất hiện chưa.
+
+**Lời giải:**
+```cpp
+vector<int> twoSum(vector<int> &nums, int target) {
+    unordered_map<int,int> seen; // giá trị -> chỉ số
+    for (int i = 0; i < (int)nums.size(); i++) {
+        int need = target - nums[i];
+        if (seen.count(need)) return {seen[need], i};
+        seen[nums[i]] = i;
+    }
+    return {-1, -1};
+}
+```
+```python
+def two_sum(nums, target):
+    seen = {}
+    for i, x in enumerate(nums):
+        need = target - x
+        if need in seen:
+            return [seen[need], i]
+        seen[x] = i
+    return [-1, -1]
+```
+
+---
+
+### Bài 4 — Theatre Square (Codeforces 1A) — Dễ-Trung bình
+
+**Đề bài (diễn giải):** Một quảng trường hình chữ nhật kích thước n × m mét cần được lát kín bằng các viên gạch vuông kích thước a × a mét. Các viên gạch phải đặt song song với cạnh quảng trường, không được cắt vỡ gạch (có thể lát dư ra ngoài rìa quảng trường nếu cần), các viên gạch không được chồng lên nhau. Tìm số viên gạch tối thiểu cần dùng để lát kín toàn bộ quảng trường.
+
+**Input:** 3 số nguyên n, m, a (1 ≤ n, m, a ≤ 10^9).
+**Output:** số viên gạch tối thiểu.
+
+**Phân tích:** Số viên gạch cần theo mỗi chiều là `ceil(n/a)` và `ceil(m/a)` — nhân lại với nhau. Vì n, m, a có thể lên tới 10^9, kết quả có thể vượt quá giới hạn `int` → phải dùng `long long`.
+
+**Lời giải:**
+```cpp
+#include <iostream>
+using namespace std;
+int main() {
+    long long n, m, a;
+    cin >> n >> m >> a;
+    long long tiles_n = (n + a - 1) / a; // ceil(n/a)
+    long long tiles_m = (m + a - 1) / a;
+    cout << tiles_n * tiles_m << "\n";
+}
+```
+```python
+n, m, a = map(int, input().split())
+tiles_n = (n + a - 1) // a
+tiles_m = (m + a - 1) // a
+print(tiles_n * tiles_m)
+```
+
+---
+
+### Bài 5 — Missing Number (CSES 1083) — Dễ-Trung bình
+
+**Đề bài (diễn giải):** Cho các số nguyên từ 1 đến n, nhưng thiếu đúng 1 số. Cho một mảng chứa n-1 số còn lại (không theo thứ tự cụ thể). Tìm số bị thiếu.
+
+**Input:** số nguyên n (2 ≤ n ≤ 2×10^5), sau đó n-1 số nguyên phân biệt trong khoảng [1, n].
+**Output:** số bị thiếu.
+
+**Phân tích:** Dùng công thức tổng 1..n = n(n+1)/2, trừ đi tổng các số đã cho → ra số bị thiếu. Cần `long long` vì n(n+1)/2 có thể lớn (n ≤ 2×10^5 → tổng ≈ 2×10^10).
+
+**Lời giải:**
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int main() {
+    int n; cin >> n;
+    long long expected = (long long)n * (n + 1) / 2;
+    long long actual = 0, x;
+    for (int i = 0; i < n - 1; i++) { cin >> x; actual += x; }
+    cout << expected - actual << "\n";
+}
+```
+```python
+n = int(input())
+expected = n * (n + 1) // 2
+actual = sum(map(int, input().split()))
+print(expected - actual)
+```
+
+---
+
+### Bài 6 — Increasing Array (CSES 1094) — Trung bình
+
+**Đề bài (diễn giải):** Cho mảng n số nguyên. Mỗi lần thao tác, có thể tăng 1 phần tử bất kỳ thêm 1 đơn vị. Tìm số thao tác tối thiểu để mảng trở thành không giảm (mỗi phần tử ≥ phần tử đứng trước).
+
+**Input:** n, sau đó n số nguyên.
+**Output:** số thao tác tối thiểu.
+
+**Phân tích:** Duyệt từ trái sang phải, nếu phần tử hiện tại nhỏ hơn phần tử trước, cần tăng nó lên bằng phần tử trước — cộng dồn số lần tăng cần thiết, đồng thời cập nhật giá trị phần tử đó thành giá trị đã tăng để so sánh cho bước sau.
+
+**Lời giải:**
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int main() {
+    int n; cin >> n;
+    vector<long long> a(n);
+    for (auto &x : a) cin >> x;
+    long long ops = 0;
+    for (int i = 1; i < n; i++) {
+        if (a[i] < a[i-1]) {
+            ops += a[i-1] - a[i];
+            a[i] = a[i-1];
+        }
+    }
+    cout << ops << "\n";
+}
+```
+```python
+n = int(input())
+a = list(map(int, input().split()))
+ops = 0
+for i in range(1, n):
+    if a[i] < a[i-1]:
+        ops += a[i-1] - a[i]
+        a[i] = a[i-1]
+print(ops)
+```
+
+---
+
+### Bài 7 — Contains Duplicate (LeetCode 217) — Trung bình
+
+**Đề bài (diễn giải):** Cho mảng số nguyên, kiểm tra xem có giá trị nào xuất hiện ít nhất 2 lần hay không.
+
+**Input:** mảng `nums`.
+**Output:** `true`/`false`.
+
+**Phân tích:** Dùng `set`/hashset để kiểm tra trùng lặp trong 1 lượt duyệt O(n), thay vì so sánh từng cặp O(n²).
+
+**Lời giải:**
+```cpp
+bool containsDuplicate(vector<int> &nums) {
+    unordered_set<int> seen;
+    for (int x : nums) {
+        if (seen.count(x)) return true;
+        seen.insert(x);
+    }
+    return false;
+}
+```
+```python
+def contains_duplicate(nums):
+    seen = set()
+    for x in nums:
+        if x in seen:
+            return True
+        seen.add(x)
+    return False
+```
+
+---
+
+### Bài 8 — Đoạn con tăng liên tiếp dài nhất (dạng đề HSG phổ biến) — Trung bình
+
+**Đề bài (diễn giải):** Cho dãy n số nguyên là chiều cao của n học sinh xếp hàng theo thứ tự cho trước. Tìm độ dài đoạn con **liên tiếp** dài nhất mà chiều cao tăng dần nghiêm ngặt.
+
+**Input:** n, sau đó n số nguyên.
+**Output:** độ dài đoạn con tăng liên tiếp dài nhất.
+
+**Phân tích:** Khác với LIS (Longest Increasing Subsequence — không cần liên tiếp, học ở Chương 8), bài này chỉ cần duyệt tuyến tính 1 lượt, giữ độ dài đoạn tăng hiện tại và reset khi gặp điểm gãy.
+
+**Lời giải:**
+```cpp
+int longestIncreasingRun(vector<int> &h) {
+    int n = h.size();
+    int best = 1, cur = 1;
+    for (int i = 1; i < n; i++) {
+        cur = (h[i] > h[i-1]) ? cur + 1 : 1;
+        best = max(best, cur);
+    }
+    return best;
+}
+```
+```python
+def longest_increasing_run(h):
+    best = cur = 1
+    for i in range(1, len(h)):
+        cur = cur + 1 if h[i] > h[i-1] else 1
+        best = max(best, cur)
+    return best
+```
+
+---
+
+### Bài 9 — Distinct Numbers (CSES 1616) — Trung bình
+
+**Đề bài (diễn giải):** Cho mảng n số nguyên, đếm số lượng giá trị **phân biệt** (không tính trùng lặp) xuất hiện trong mảng.
+
+**Input:** n, sau đó n số nguyên (giá trị có thể lên tới 10^9).
+**Output:** số lượng giá trị phân biệt.
+
+**Phân tích:** Bài rèn phản xạ chọn đúng cấu trúc dữ liệu: dùng `set`/`sort + unique` thay vì đếm bằng mảng đánh dấu (vì giá trị lên tới 10^9, không thể cấp phát mảng kích thước 10^9).
+
+**Lời giải:**
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int main() {
+    int n; cin >> n;
+    vector<int> a(n);
+    for (auto &x : a) cin >> x;
+    sort(a.begin(), a.end());
+    int cnt = unique(a.begin(), a.end()) - a.begin();
+    cout << cnt << "\n";
+}
+```
+```python
+n = int(input())
+a = list(map(int, input().split()))
+print(len(set(a)))
+```
+
+---
+
+### Bài 10 — Restaurant Customers (CSES 1619) — Trung bình-Khó
+
+**Đề bài (diễn giải):** Một nhà hàng có n khách hàng trong ngày, khách thứ i đến vào thời điểm `arrival[i]` và rời đi vào thời điểm `leave[i]`. Tìm số lượng khách hàng tối đa có mặt trong nhà hàng **cùng một lúc** tại bất kỳ thời điểm nào trong ngày.
+
+**Input:** n, sau đó n dòng, mỗi dòng gồm `arrival[i]` và `leave[i]`.
+**Output:** số khách tối đa cùng lúc.
+
+**Phân tích:** Đây là bài toán "quét dòng" (sweep line) đơn giản: tạo danh sách sự kiện (+1 tại thời điểm đến, -1 tại thời điểm rời đi), sắp xếp theo thời gian (ưu tiên xử lý "rời đi" trước "đến" nếu trùng thời điểm, để tránh đếm dư khi khách rời đi và khách khác đến cùng lúc), rồi quét qua và cộng dồn.
+
+**Lời giải:**
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int main() {
+    int n; cin >> n;
+    vector<pair<int,int>> events; // (thời điểm, loại: -1 rời đi, +1 đến)
+    for (int i = 0; i < n; i++) {
+        int a, b; cin >> a >> b;
+        events.push_back({a, 1});
+        events.push_back({b, -1});
+    }
+    sort(events.begin(), events.end()); // (b, -1) < (b, 1) tự nhiên vì -1 < 1
+    int cur = 0, best = 0;
+    for (auto &[t, type] : events) {
+        cur += type;
+        best = max(best, cur);
+    }
+    cout << best << "\n";
+}
+```
+```python
+n = int(input())
+events = []
+for _ in range(n):
+    a, b = map(int, input().split())
+    events.append((a, 1))
+    events.append((b, -1))
+events.sort()  # (b, -1) đứng trước (b, 1) tự nhiên
+cur = best = 0
+for t, typ in events:
+    cur += typ
+    best = max(best, cur)
+print(best)
+```
+
+---
+
+### Bài 11 — Sum of Two Values (CSES 1640) — Trung bình
+
+**Đề bài (diễn giải):** Cho mảng n số nguyên và số x. Tìm 2 chỉ số (i, j), i ≠ j, sao cho `a[i] + a[j] = x`. In ra 1 cặp chỉ số hợp lệ bất kỳ (theo 1-indexed), hoặc "IMPOSSIBLE" nếu không tồn tại.
+
+**Input:** n, x, sau đó n số nguyên.
+**Output:** cặp chỉ số hoặc "IMPOSSIBLE".
+
+**Phân tích:** Giống Bài 3 (Two Sum) nhưng yêu cầu output theo 1-indexed và có case không tồn tại — rèn kỹ năng đọc kỹ yêu cầu định dạng output, dễ sai sót dù thuật toán đúng.
+
+**Lời giải:**
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int main() {
+    int n; long long x; cin >> n >> x;
+    vector<long long> a(n);
+    for (auto &v : a) cin >> v;
+
+    unordered_map<long long,int> seen; // giá trị -> chỉ số (1-indexed)
+    for (int i = 0; i < n; i++) {
+        long long need = x - a[i];
+        if (seen.count(need)) {
+            cout << seen[need] << " " << i + 1 << "\n";
+            return 0;
+        }
+        seen[a[i]] = i + 1;
+    }
+    cout << "IMPOSSIBLE\n";
+}
+```
+```python
+n, x = map(int, input().split())
+a = list(map(int, input().split()))
+seen = {}
+result = None
+for i, v in enumerate(a):
+    need = x - v
+    if need in seen:
+        result = (seen[need], i + 1)
+        break
+    seen[v] = i + 1
+print(f"{result[0]} {result[1]}" if result else "IMPOSSIBLE")
+```
+
+---
+
+### Bài 12 — Bài tổng hợp: nhiều giới hạn cùng lúc (minh hoạ, không trích từ đề cụ thể) — Khó
+
+**Đề bài (tự thiết kế minh hoạ):** Cho mảng n số nguyên (n ≤ 2×10^5) và q truy vấn (q ≤ 2×10^5). Mỗi truy vấn cho 1 số x, yêu cầu trả lời: phần tử nhỏ nhất trong mảng có giá trị **lớn hơn hoặc bằng x** là bao nhiêu?
+
+**Input:** n, mảng a; q; q dòng tiếp theo mỗi dòng 1 số x.
+**Output:** q dòng kết quả tương ứng.
+
+**Phân tích:** Đề có 2 giới hạn (n và q) đều ≤ 2×10^5 — cần đọc **đồng thời cả 2** để suy ra độ phức tạp cho phép: brute-force mỗi truy vấn O(n) → tổng O(n·q) = 4×10^10 → chắc chắn TLE. Giải pháp: sort mảng 1 lần O(n log n), mỗi truy vấn dùng tìm kiếm nhị phân O(log n) → tổng O((n+q) log n), an toàn.
+
+**Lời giải:**
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int main() {
+    int n; cin >> n;
+    vector<long long> a(n);
+    for (auto &v : a) cin >> v;
+    sort(a.begin(), a.end());
+
+    int q; cin >> q;
+    while (q--) {
+        long long x; cin >> x;
+        auto it = lower_bound(a.begin(), a.end(), x);
+        cout << (it != a.end() ? *it : -1) << "\n";
+    }
+}
+```
+```python
+import bisect, sys
+input = sys.stdin.readline
+
+n = int(input())
+a = sorted(map(int, input().split()))
+q = int(input())
+out = []
+for _ in range(q):
+    x = int(input())
+    pos = bisect.bisect_left(a, x)
+    out.append(str(a[pos]) if pos < len(a) else "-1")
+print("\n".join(out))
+```
