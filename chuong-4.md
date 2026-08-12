@@ -4,456 +4,1175 @@
 
 ## 4.1. Sắp xếp với Comparator tuỳ chỉnh
 
-**Vấn đề:** Hàm `sort()` mặc định chỉ sắp xếp tăng dần theo phép so sánh `<` tự nhiên. Nhưng đề bài thường yêu cầu sắp xếp theo **nhiều tiêu chí** (VD: điểm giảm dần, nếu bằng điểm thì tên tăng dần theo alphabet) hoặc theo tiêu chí **không tự nhiên** (VD: sắp xếp các số theo giá trị tuyệt đối, hoặc theo số lượng ước số).
+**Vấn đề:** Hàm `sort()` mặc định chỉ sắp xếp tăng dần theo phép so sánh `<` tự nhiên. Nhưng đề bài thường yêu cầu sắp xếp theo **nhiều tiêu chí** (ví dụ: điểm giảm dần, nếu bằng điểm thì tên tăng dần theo bảng chữ cái) hoặc theo tiêu chí **không tự nhiên**.
 
 ### Cách viết Comparator
 
 ```cpp
-vector<pair<int,string>> hs = {{80,"Binh"}, {90,"An"}, {80,"An"}};
+#include <bits/stdc++.h>
+using namespace std;
 
-// Cách 1: dùng lambda function (phổ biến nhất trong thi đấu)
-sort(hs.begin(), hs.end(), [](const pair<int,string> &a, const pair<int,string> &b) {
-    if (a.first != b.first) return a.first > b.first; // điểm giảm dần
-    return a.second < b.second;                          // tên tăng dần nếu bằng điểm
-});
+bool compareHocSinh(const pair<int, string> &hocSinhA, const pair<int, string> &hocSinhB) {
+    int diemA = hocSinhA.first;
+    string tenA = hocSinhA.second;
+    int diemB = hocSinhB.first;
+    string tenB = hocSinhB.second;
 
-// Cách 2: dùng hàm so sánh riêng (khi comparator phức tạp, tái sử dụng nhiều nơi)
-bool cmp(const pair<int,string> &a, const pair<int,string> &b) {
-    if (a.first != b.first) return a.first > b.first;
-    return a.second < b.second;
+    if (diemA != diemB) {
+        // Điểm cao hơn thì đứng trước
+        return diemA > diemB;
+    }
+    // Nếu điểm bằng nhau, tên nào đứng trước theo bảng chữ cái thì đứng trước
+    return tenA < tenB;
 }
-// sort(hs.begin(), hs.end(), cmp);
+
+int main() {
+    vector<pair<int, string>> danhSachHocSinh;
+    danhSachHocSinh.push_back(make_pair(80, "Binh"));
+    danhSachHocSinh.push_back(make_pair(90, "An"));
+    danhSachHocSinh.push_back(make_pair(80, "An"));
+
+    sort(danhSachHocSinh.begin(), danhSachHocSinh.end(), compareHocSinh);
+
+    for (int i = 0; i < (int)danhSachHocSinh.size(); i++) {
+        int diem = danhSachHocSinh[i].first;
+        string ten = danhSachHocSinh[i].second;
+        cout << ten << " - " << diem << " diem" << endl;
+    }
+
+    return 0;
+}
 ```
 ```python
-hs = [(80,"Binh"), (90,"An"), (80,"An")]
-hs.sort(key=lambda p: (-p[0], p[1]))  # điểm giảm dần (đảo dấu), tên tăng dần
+def lay_khoa_sap_xep(hoc_sinh):
+    # hoc_sinh là 1 tuple (diem, ten)
+    diem = hoc_sinh[0]
+    ten = hoc_sinh[1]
+    # Trả về (-diem, ten) để điểm giảm dần (đảo dấu), tên tăng dần
+    return (-diem, ten)
+
+
+danh_sach_hoc_sinh = [(80, "Binh"), (90, "An"), (80, "An")]
+
+danh_sach_hoc_sinh.sort(key=lay_khoa_sap_xep)
+
+for hoc_sinh in danh_sach_hoc_sinh:
+    diem = hoc_sinh[0]
+    ten = hoc_sinh[1]
+    print(ten, "-", diem, "diem")
 ```
 
-> **Quy tắc bắt buộc của comparator trong C++:** hàm phải định nghĩa quan hệ **thứ tự nghiêm ngặt** (strict weak ordering) — trả về `true` nếu a **thực sự đứng trước** b, và với a = b phải trả về `false`. Viết sai quy tắc này (VD: dùng `<=` thay vì `<`) gây **undefined behavior**, thường biểu hiện thành crash hoặc kết quả sai không rõ nguyên nhân khi n lớn.
+> **Quy tắc bắt buộc của comparator trong C++:** hàm phải trả về `true` nếu phần tử thứ nhất **thực sự đứng trước** phần tử thứ hai. Nếu 2 phần tử bằng nhau, hàm phải trả về `false`. Viết sai quy tắc này có thể khiến chương trình chạy sai hoặc bị lỗi khi mảng lớn.
 
 ### Ví dụ 1 (Dễ) — Sắp xếp giảm dần đơn giản
+
 ```cpp
-vector<int> a = {5, 2, 8, 1, 9};
-sort(a.begin(), a.end(), greater<int>()); // {9, 8, 5, 2, 1}
+#include <bits/stdc++.h>
+using namespace std;
+
+int main() {
+    vector<int> danhSachSo;
+    danhSachSo.push_back(5);
+    danhSachSo.push_back(2);
+    danhSachSo.push_back(8);
+    danhSachSo.push_back(1);
+    danhSachSo.push_back(9);
+
+    sort(danhSachSo.begin(), danhSachSo.end(), greater<int>());
+
+    for (int i = 0; i < (int)danhSachSo.size(); i++) {
+        cout << danhSachSo[i] << " ";
+    }
+    cout << endl;
+
+    return 0;
+}
 ```
 ```python
-a = [5, 2, 8, 1, 9]
-a.sort(reverse=True)
+danh_sach_so = [5, 2, 8, 1, 9]
+
+danh_sach_so.sort(reverse=True)
+
+for so in danh_sach_so:
+    print(so, end=" ")
+print()
 ```
 
-### Ví dụ 2 (Trung bình) — Sắp xếp theo tỉ lệ (không so sánh trực tiếp được vì số thực)
-Bài toán: sắp xếp các "vật" theo tỉ lệ giá trị/khối lượng giảm dần (dùng trong bài Fractional Knapsack, Chương 25). Nếu chia trực tiếp để so sánh, dễ gặp sai số dấu phẩy động — nên **so sánh chéo bằng nhân** để giữ số nguyên.
+### Ví dụ 2 (Trung bình) — Sắp xếp theo tỉ lệ giá trị/khối lượng
+
+Bài toán: sắp xếp các vật theo tỉ lệ giá trị/khối lượng giảm dần (sẽ dùng ở Chương 25 — Bài toán Fractional Knapsack). Nếu chia trực tiếp để so sánh, có thể gặp sai số dấu phẩy động. Cách an toàn hơn là **so sánh chéo bằng phép nhân** thay vì chia.
+
 ```cpp
-struct Item { long long value, weight; };
-sort(items.begin(), items.end(), [](const Item &a, const Item &b) {
-    // so sánh a.value/a.weight > b.value/b.weight bằng nhân chéo, tránh chia (tránh sai số)
-    return a.value * b.weight > b.value * a.weight;
-});
-```
-```python
-items.sort(key=lambda it: -it[0] / it[1])  # Python: chia trực tiếp thường đủ chính xác cho hầu hết bài
-```
+#include <bits/stdc++.h>
+using namespace std;
 
-### Ví dụ 3 (Khó) — Sắp xếp để ghép chuỗi tạo số lớn nhất
-Bài toán: cho danh sách các số (dạng chuỗi), ghép chúng lại theo thứ tự nào đó để tạo thành số lớn nhất có thể. Ví dụ: `["3", "30", "34", "5", "9"]` → ghép thành `"9534330"`.
+struct Vat {
+    long long giaTri;
+    long long khoiLuong;
+};
 
-**Phân tích:** Không thể so sánh 2 số bằng giá trị số học thông thường (`"30" > "3"` nhưng thứ tự đúng lại là `"3"` trước `"30"` vì `"330" > "303"`). Cần **comparator tuỳ chỉnh**: so sánh `a+b` với `b+a` (nối chuỗi).
-```cpp
-string largestNumber(vector<string> &nums) {
-    sort(nums.begin(), nums.end(), [](const string &a, const string &b) {
-        return a + b > b + a; // nếu "ab" > "ba" thì a đứng trước b
-    });
-    string result;
-    for (auto &s : nums) result += s;
-    // Xử lý trường hợp toàn số 0: kết quả "000" phải trả về "0"
-    if (result[0] == '0') return "0";
-    return result;
+bool compareTiLe(const Vat &vatA, const Vat &vatB) {
+    // Ta muốn so sánh: giaTri_A / khoiLuong_A > giaTri_B / khoiLuong_B
+    // Để tránh chia (tránh sai số), ta nhân chéo:
+    long long benTrai = vatA.giaTri * vatB.khoiLuong;
+    long long benPhai = vatB.giaTri * vatA.khoiLuong;
+    return benTrai > benPhai;
+}
+
+int main() {
+    vector<Vat> danhSachVat;
+    danhSachVat.push_back({60, 10});
+    danhSachVat.push_back({100, 20});
+    danhSachVat.push_back({120, 30});
+
+    sort(danhSachVat.begin(), danhSachVat.end(), compareTiLe);
+
+    for (int i = 0; i < (int)danhSachVat.size(); i++) {
+        cout << "Gia tri: " << danhSachVat[i].giaTri;
+        cout << ", Khoi luong: " << danhSachVat[i].khoiLuong << endl;
+    }
+
+    return 0;
 }
 ```
 ```python
 from functools import cmp_to_key
 
-def largest_number(nums):
-    def compare(a, b):
-        if a + b > b + a: return -1
-        if a + b < b + a: return 1
-        return 0
-    nums.sort(key=cmp_to_key(compare))
-    result = "".join(nums)
-    return "0" if result[0] == '0' else result
+
+def so_sanh_ti_le(vat_a, vat_b):
+    gia_tri_a = vat_a[0]
+    khoi_luong_a = vat_a[1]
+    gia_tri_b = vat_b[0]
+    khoi_luong_b = vat_b[1]
+
+    # So sánh gia_tri_a / khoi_luong_a > gia_tri_b / khoi_luong_b bằng nhân chéo
+    ben_trai = gia_tri_a * khoi_luong_b
+    ben_phai = gia_tri_b * khoi_luong_a
+
+    if ben_trai > ben_phai:
+        return -1  # vat_a đứng trước vat_b
+    elif ben_trai < ben_phai:
+        return 1   # vat_b đứng trước vat_a
+    else:
+        return 0   # bằng nhau
+
+
+danh_sach_vat = [(60, 10), (100, 20), (120, 30)]
+
+danh_sach_vat.sort(key=cmp_to_key(so_sanh_ti_le))
+
+for vat in danh_sach_vat:
+    gia_tri = vat[0]
+    khoi_luong = vat[1]
+    print("Gia tri:", gia_tri, ", Khoi luong:", khoi_luong)
 ```
 
-**Bài tập minh hoạ:** Cho danh sách các cuộc họp, mỗi cuộc họp có (giờ bắt đầu, giờ kết thúc). Sắp xếp và tìm số phòng họp tối thiểu cần để tổ chức tất cả các cuộc họp mà không bị trùng giờ trong cùng 1 phòng.
+### Ví dụ 3 (Khó) — Sắp xếp để ghép chuỗi tạo số lớn nhất
 
-**Lời giải:** Tách thành 2 danh sách sự kiện (bắt đầu +1, kết thúc -1), sắp xếp theo thời gian (kết thúc xử lý trước nếu trùng giờ), quét và tìm giá trị lớn nhất — kỹ thuật này sẽ gặp lại ở "sweep line" (Chương 21).
+Bài toán: cho danh sách các số (dạng chuỗi ký tự), ghép chúng lại theo một thứ tự nào đó để tạo thành số lớn nhất có thể được. Ví dụ: `["3", "30", "34", "5", "9"]` ghép thành `"9534330"`.
+
+**Phân tích:** Ta không thể so sánh 2 số này bằng giá trị số học bình thường. Ví dụ `"30"` lớn hơn `"3"` về mặt số học, nhưng nếu ghép `"3"` trước `"30"` ta được `"330"`, còn ghép `"30"` trước `"3"` ta được `"303"`. Vì `"330"` lớn hơn `"303"`, nên `"3"` phải đứng trước `"30"`. Vậy quy tắc so sánh đúng là: so sánh chuỗi `a + b` với chuỗi `b + a`.
+
 ```cpp
-int minMeetingRooms(vector<pair<int,int>> &meetings) {
-    vector<pair<int,int>> events; // (thời điểm, loại: -1 kết thúc, +1 bắt đầu)
-    for (auto &[s, e] : meetings) { events.push_back({s, 1}); events.push_back({e, -1}); }
-    sort(events.begin(), events.end()); // (t,-1) đứng trước (t,1) tự nhiên vì -1 < 1
-    int cur = 0, maxRooms = 0;
-    for (auto &[t, type] : events) { cur += type; maxRooms = max(maxRooms, cur); }
-    return maxRooms;
+#include <bits/stdc++.h>
+using namespace std;
+
+bool compareGhepSo(const string &soA, const string &soB) {
+    string ghepAB = soA + soB;
+    string ghepBA = soB + soA;
+    // Nếu ghép A trước B tạo ra số lớn hơn, thì A đứng trước
+    return ghepAB > ghepBA;
 }
+
+string taoSoLonNhat(vector<string> danhSachSo) {
+    sort(danhSachSo.begin(), danhSachSo.end(), compareGhepSo);
+
+    string ketQua = "";
+    for (int i = 0; i < (int)danhSachSo.size(); i++) {
+        ketQua = ketQua + danhSachSo[i];
+    }
+
+    // Xử lý trường hợp toàn số 0, ví dụ "000" phải trả về "0"
+    if (ketQua[0] == '0') {
+        return "0";
+    }
+    return ketQua;
+}
+
+int main() {
+    vector<string> danhSachSo;
+    danhSachSo.push_back("3");
+    danhSachSo.push_back("30");
+    danhSachSo.push_back("34");
+    danhSachSo.push_back("5");
+    danhSachSo.push_back("9");
+
+    cout << taoSoLonNhat(danhSachSo) << endl;
+
+    return 0;
+}
+```
+```python
+from functools import cmp_to_key
+
+
+def so_sanh_ghep_so(so_a, so_b):
+    ghep_ab = so_a + so_b
+    ghep_ba = so_b + so_a
+
+    if ghep_ab > ghep_ba:
+        return -1  # so_a nên đứng trước
+    elif ghep_ab < ghep_ba:
+        return 1   # so_b nên đứng trước
+    else:
+        return 0
+
+
+def tao_so_lon_nhat(danh_sach_so):
+    danh_sach_so_moi = list(danh_sach_so)
+    danh_sach_so_moi.sort(key=cmp_to_key(so_sanh_ghep_so))
+
+    ket_qua = ""
+    for so in danh_sach_so_moi:
+        ket_qua = ket_qua + so
+
+    if ket_qua[0] == '0':
+        return "0"
+    return ket_qua
+
+
+danh_sach_so = ["3", "30", "34", "5", "9"]
+print(tao_so_lon_nhat(danh_sach_so))
+```
+
+**Bài tập minh hoạ:** Cho danh sách các cuộc họp, mỗi cuộc họp có giờ bắt đầu và giờ kết thúc. Hãy tìm số phòng họp tối thiểu cần có để tổ chức tất cả các cuộc họp, sao cho không có 2 cuộc họp nào bị trùng giờ trong cùng 1 phòng.
+
+**Lời giải:** Ta tách mỗi cuộc họp thành 2 sự kiện: sự kiện "bắt đầu" (cộng thêm 1 phòng đang dùng) và sự kiện "kết thúc" (bớt đi 1 phòng đang dùng). Sau đó sắp xếp tất cả sự kiện theo thời gian, rồi quét qua để tìm số phòng đang dùng lớn nhất tại một thời điểm bất kỳ.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+int timSoPhongHopToiThieu(vector<pair<int, int>> danhSachCuocHop) {
+    vector<pair<int, int>> danhSachSuKien;
+
+    for (int i = 0; i < (int)danhSachCuocHop.size(); i++) {
+        int gioBatDau = danhSachCuocHop[i].first;
+        int gioKetThuc = danhSachCuocHop[i].second;
+        // Sự kiện bắt đầu, đánh dấu bằng số 1
+        danhSachSuKien.push_back(make_pair(gioBatDau, 1));
+        // Sự kiện kết thúc, đánh dấu bằng số -1
+        danhSachSuKien.push_back(make_pair(gioKetThuc, -1));
+    }
+
+    // Sắp xếp theo thời gian; nếu trùng thời gian, sự kiện kết thúc (-1) đứng trước
+    // vì cặp (thoiGian, -1) tự nhiên nhỏ hơn cặp (thoiGian, 1) khi so sánh pair
+    sort(danhSachSuKien.begin(), danhSachSuKien.end());
+
+    int soPhongDangDung = 0;
+    int soPhongToiDa = 0;
+
+    for (int i = 0; i < (int)danhSachSuKien.size(); i++) {
+        int loaiSuKien = danhSachSuKien[i].second;
+        soPhongDangDung = soPhongDangDung + loaiSuKien;
+        if (soPhongDangDung > soPhongToiDa) {
+            soPhongToiDa = soPhongDangDung;
+        }
+    }
+
+    return soPhongToiDa;
+}
+
+int main() {
+    vector<pair<int, int>> danhSachCuocHop;
+    danhSachCuocHop.push_back(make_pair(0, 30));
+    danhSachCuocHop.push_back(make_pair(5, 10));
+    danhSachCuocHop.push_back(make_pair(15, 20));
+
+    cout << timSoPhongHopToiThieu(danhSachCuocHop) << endl;
+
+    return 0;
+}
+```
+```python
+def tim_so_phong_hop_toi_thieu(danh_sach_cuoc_hop):
+    danh_sach_su_kien = []
+
+    for cuoc_hop in danh_sach_cuoc_hop:
+        gio_bat_dau = cuoc_hop[0]
+        gio_ket_thuc = cuoc_hop[1]
+        danh_sach_su_kien.append((gio_bat_dau, 1))
+        danh_sach_su_kien.append((gio_ket_thuc, -1))
+
+    # Sắp xếp theo thời gian; nếu trùng thời gian, sự kiện kết thúc (-1) đứng trước
+    danh_sach_su_kien.sort()
+
+    so_phong_dang_dung = 0
+    so_phong_toi_da = 0
+
+    for su_kien in danh_sach_su_kien:
+        loai_su_kien = su_kien[1]
+        so_phong_dang_dung = so_phong_dang_dung + loai_su_kien
+        if so_phong_dang_dung > so_phong_toi_da:
+            so_phong_toi_da = so_phong_dang_dung
+
+    return so_phong_toi_da
+
+
+danh_sach_cuoc_hop = [(0, 30), (5, 10), (15, 20)]
+print(tim_so_phong_hop_toi_thieu(danh_sach_cuoc_hop))
 ```
 
 ---
 
 ## 4.2. Tìm kiếm nhị phân cổ điển
 
-**Nêu bài toán:** Cho mảng đã sắp xếp `a` gồm n phần tử, tìm vị trí của giá trị `x` (hoặc xác nhận không tồn tại).
+**Nêu bài toán:** Cho một mảng đã được sắp xếp `a` gồm n phần tử. Hãy tìm vị trí của giá trị `x` trong mảng đó (hoặc xác nhận rằng `x` không tồn tại trong mảng).
 
-**Phân tích:** Nếu mảng chưa sắp xếp, phải duyệt tuyến tính O(n). Nhưng vì mảng **đã có thứ tự**, tại mỗi bước ta có thể loại bỏ **một nửa** không gian tìm kiếm dựa vào so sánh với phần tử ở giữa.
+**Phân tích:** Nếu mảng chưa được sắp xếp, ta buộc phải duyệt qua từng phần tử, tốn O(n) thời gian. Nhưng vì mảng **đã có thứ tự**, tại mỗi bước ta có thể loại bỏ **một nửa** không gian tìm kiếm chỉ bằng cách so sánh với phần tử nằm ở giữa.
 
-**Giải pháp đơn thuần:** Duyệt tuyến tính O(n) — luôn đúng nhưng không tận dụng được tính chất đã sắp xếp của mảng.
+**Giải pháp đơn thuần:** Duyệt tuyến tính qua từng phần tử của mảng, so sánh với `x`. Cách này luôn cho kết quả đúng nhưng không tận dụng được việc mảng đã có thứ tự.
 
-**Khó khăn:** Với n = 10^9 (ví dụ tìm trong không gian giá trị rất lớn), O(n) không khả thi trong giới hạn thời gian.
+**Khó khăn với giải pháp đơn thuần:** Khi n lên tới hàng triệu, hoặc khi ta cần thực hiện rất nhiều truy vấn tìm kiếm liên tiếp, việc duyệt tuyến tính O(n) cho mỗi truy vấn sẽ quá chậm.
 
-**Cách tiếp cận mới:** Tìm kiếm nhị phân — mỗi bước thu hẹp không gian tìm kiếm còn **một nửa**, đạt độ phức tạp O(log n).
+**Cách tiếp cận mới:** Sử dụng tìm kiếm nhị phân. Mỗi bước ta thu hẹp không gian tìm kiếm còn lại một nửa, nên tổng độ phức tạp chỉ còn O(log n).
 
-### Cài đặt chuẩn (2 biến thể quan trọng)
+### Cài đặt tìm kiếm nhị phân cơ bản
+
 ```cpp
-// Biến thể 1: tìm kiếm nhị phân cơ bản, trả về chỉ số hoặc -1 nếu không tồn tại
-int binarySearch(vector<int> &a, int target) {
-    int lo = 0, hi = (int)a.size() - 1;
-    while (lo <= hi) {
-        int mid = lo + (hi - lo) / 2; // tránh tràn số so với (lo+hi)/2 khi lo,hi rất lớn
-        if (a[mid] == target) return mid;
-        else if (a[mid] < target) lo = mid + 1;
-        else hi = mid - 1;
+#include <bits/stdc++.h>
+using namespace std;
+
+int timKiemNhiPhan(vector<int> a, int target) {
+    int chiSoDau = 0;
+    int chiSoCuoi = (int)a.size() - 1;
+
+    while (chiSoDau <= chiSoCuoi) {
+        int chiSoGiua = chiSoDau + (chiSoCuoi - chiSoDau) / 2;
+
+        if (a[chiSoGiua] == target) {
+            return chiSoGiua;
+        } else if (a[chiSoGiua] < target) {
+            // Giá trị cần tìm lớn hơn giá trị ở giữa
+            // -> loại bỏ nửa bên trái, chỉ xét nửa bên phải
+            chiSoDau = chiSoGiua + 1;
+        } else {
+            // Giá trị cần tìm nhỏ hơn giá trị ở giữa
+            // -> loại bỏ nửa bên phải, chỉ xét nửa bên trái
+            chiSoCuoi = chiSoGiua - 1;
+        }
     }
+
+    // Không tìm thấy
     return -1;
 }
 
-// Biến thể 2: dùng STL có sẵn - lower_bound/upper_bound (khuyên dùng trong thi đấu)
-auto it = lower_bound(a.begin(), a.end(), target); // vị trí đầu tiên >= target
-auto it2 = upper_bound(a.begin(), a.end(), target); // vị trí đầu tiên > target
-bool exists = (it != a.end() && *it == target);
+int main() {
+    vector<int> a = {1, 3, 5, 7, 9, 11, 13};
+    int target = 7;
+
+    int viTri = timKiemNhiPhan(a, target);
+    cout << "Vi tri cua " << target << " la: " << viTri << endl;
+
+    return 0;
+}
+```
+```python
+def tim_kiem_nhi_phan(a, target):
+    chi_so_dau = 0
+    chi_so_cuoi = len(a) - 1
+
+    while chi_so_dau <= chi_so_cuoi:
+        chi_so_giua = chi_so_dau + (chi_so_cuoi - chi_so_dau) // 2
+
+        if a[chi_so_giua] == target:
+            return chi_so_giua
+        elif a[chi_so_giua] < target:
+            # Giá trị cần tìm lớn hơn giá trị ở giữa
+            chi_so_dau = chi_so_giua + 1
+        else:
+            # Giá trị cần tìm nhỏ hơn giá trị ở giữa
+            chi_so_cuoi = chi_so_giua - 1
+
+    return -1
+
+
+a = [1, 3, 5, 7, 9, 11, 13]
+target = 7
+
+vi_tri = tim_kiem_nhi_phan(a, target)
+print("Vi tri cua", target, "la:", vi_tri)
+```
+
+> **Lưu ý về công thức tính điểm giữa:** ta viết `chiSoGiua = chiSoDau + (chiSoCuoi - chiSoDau) / 2` thay vì `chiSoGiua = (chiSoDau + chiSoCuoi) / 2`. Lý do là khi `chiSoDau` và `chiSoCuoi` là những số rất lớn, phép cộng `chiSoDau + chiSoCuoi` trong C++ có thể bị **tràn số** (vượt quá giới hạn của kiểu `int`). Cách viết đầu tiên tránh được lỗi này.
+
+### Sử dụng công cụ có sẵn: `lower_bound` và `upper_bound` (C++), `bisect` (Python)
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+int main() {
+    vector<int> a = {1, 3, 5, 5, 5, 7, 9};
+    int target = 5;
+
+    // lower_bound trả về vị trí ĐẦU TIÊN có giá trị >= target
+    vector<int>::iterator conTroDau = lower_bound(a.begin(), a.end(), target);
+
+    // upper_bound trả về vị trí ĐẦU TIÊN có giá trị > target
+    vector<int>::iterator conTroCuoi = upper_bound(a.begin(), a.end(), target);
+
+    int viTriDau = conTroDau - a.begin();
+    int viTriCuoi = conTroCuoi - a.begin();
+
+    cout << "Vi tri dau tien >= target: " << viTriDau << endl;
+    cout << "Vi tri dau tien > target: " << viTriCuoi << endl;
+
+    return 0;
+}
 ```
 ```python
 import bisect
 
-def binary_search(a, target):
-    lo, hi = 0, len(a) - 1
-    while lo <= hi:
-        mid = (lo + hi) // 2
-        if a[mid] == target: return mid
-        elif a[mid] < target: lo = mid + 1
-        else: hi = mid - 1
-    return -1
+a = [1, 3, 5, 5, 5, 7, 9]
+target = 5
 
-# Dùng module bisect (khuyên dùng)
-pos = bisect.bisect_left(a, target)   # vị trí đầu tiên >= target
-exists = pos < len(a) and a[pos] == target
+# bisect_left trả về vị trí ĐẦU TIÊN có giá trị >= target
+vi_tri_dau = bisect.bisect_left(a, target)
+
+# bisect_right trả về vị trí ĐẦU TIÊN có giá trị > target
+vi_tri_cuoi = bisect.bisect_right(a, target)
+
+print("Vi tri dau tien >= target:", vi_tri_dau)
+print("Vi tri dau tien > target:", vi_tri_cuoi)
 ```
 
-> **Lỗi kinh điển:** viết `int mid = (lo + hi) / 2;` khi `lo, hi` là số nguyên lớn (gần giới hạn `int`) có thể **tràn số** khi cộng `lo + hi`. Luôn viết `mid = lo + (hi - lo) / 2` để an toàn.
+### Ví dụ 1 (Dễ) — Tìm vị trí xuất hiện đầu tiên và cuối cùng của 1 giá trị
 
-### Ví dụ 1 (Dễ) — Tìm chỉ số xuất hiện đầu tiên/cuối cùng của 1 giá trị trong mảng có phần tử trùng lặp
 ```cpp
-pair<int,int> findFirstLast(vector<int> &a, int target) {
-    int first = lower_bound(a.begin(), a.end(), target) - a.begin();
-    int last = upper_bound(a.begin(), a.end(), target) - a.begin() - 1;
-    if (first >= (int)a.size() || a[first] != target) return {-1, -1};
-    return {first, last};
+#include <bits/stdc++.h>
+using namespace std;
+
+pair<int, int> timViTriDauVaCuoi(vector<int> a, int target) {
+    int viTriDau = lower_bound(a.begin(), a.end(), target) - a.begin();
+
+    // Nếu target không tồn tại trong mảng
+    if (viTriDau >= (int)a.size() || a[viTriDau] != target) {
+        return make_pair(-1, -1);
+    }
+
+    int viTriSauCung = upper_bound(a.begin(), a.end(), target) - a.begin() - 1;
+
+    return make_pair(viTriDau, viTriSauCung);
+}
+
+int main() {
+    vector<int> a = {1, 2, 2, 2, 3, 4, 5};
+    int target = 2;
+
+    pair<int, int> ketQua = timViTriDauVaCuoi(a, target);
+    cout << "Vi tri dau: " << ketQua.first << endl;
+    cout << "Vi tri cuoi: " << ketQua.second << endl;
+
+    return 0;
 }
 ```
 ```python
-def find_first_last(a, target):
-    first = bisect.bisect_left(a, target)
-    last = bisect.bisect_right(a, target) - 1
-    if first >= len(a) or a[first] != target:
+import bisect
+
+
+def tim_vi_tri_dau_va_cuoi(a, target):
+    vi_tri_dau = bisect.bisect_left(a, target)
+
+    if vi_tri_dau >= len(a) or a[vi_tri_dau] != target:
         return (-1, -1)
-    return (first, last)
+
+    vi_tri_cuoi = bisect.bisect_right(a, target) - 1
+
+    return (vi_tri_dau, vi_tri_cuoi)
+
+
+a = [1, 2, 2, 2, 3, 4, 5]
+target = 2
+
+vi_tri_dau, vi_tri_cuoi = tim_vi_tri_dau_va_cuoi(a, target)
+print("Vi tri dau:", vi_tri_dau)
+print("Vi tri cuoi:", vi_tri_cuoi)
 ```
 
-### Ví dụ 2 (Trung bình) — Tìm kiếm nhị phân trên mảng xoay (Rotated Sorted Array)
-Bài toán: mảng đã sắp xếp bị "xoay" tại 1 điểm không xác định (VD: `[4,5,6,7,0,1,2]`). Tìm target trong O(log n).
+### Ví dụ 2 (Trung bình) — Tìm kiếm trên mảng đã sắp xếp nhưng bị xoay
 
-**Phân tích:** Mảng không còn đơn điệu toàn cục, nhưng **luôn có ít nhất 1 nửa (trái hoặc phải của `mid`) vẫn đơn điệu** — kiểm tra nửa nào đơn điệu để quyết định thu hẹp về bên nào.
+Bài toán: mảng đã sắp xếp bị "xoay" tại một điểm không xác định trước. Ví dụ mảng gốc `[0,1,2,4,5,6,7]` bị xoay thành `[4,5,6,7,0,1,2]`. Hãy tìm target trong mảng này với độ phức tạp O(log n).
+
+**Phân tích:** Mảng này không còn đơn điệu toàn bộ, nhưng nếu ta xét đoạn từ `chiSoDau` đến `chiSoGiua` và đoạn từ `chiSoGiua` đến `chiSoCuoi`, luôn có **ít nhất một trong hai đoạn** vẫn giữ nguyên thứ tự tăng dần. Ta kiểm tra đoạn nào còn đơn điệu để quyết định thu hẹp về bên nào.
+
 ```cpp
-int searchRotated(vector<int> &a, int target) {
-    int lo = 0, hi = a.size() - 1;
-    while (lo <= hi) {
-        int mid = lo + (hi - lo) / 2;
-        if (a[mid] == target) return mid;
-        if (a[lo] <= a[mid]) { // nửa trái đơn điệu
-            if (a[lo] <= target && target < a[mid]) hi = mid - 1;
-            else lo = mid + 1;
-        } else {                 // nửa phải đơn điệu
-            if (a[mid] < target && target <= a[hi]) lo = mid + 1;
-            else hi = mid - 1;
+#include <bits/stdc++.h>
+using namespace std;
+
+int timKiemTrenMangBiXoay(vector<int> a, int target) {
+    int chiSoDau = 0;
+    int chiSoCuoi = (int)a.size() - 1;
+
+    while (chiSoDau <= chiSoCuoi) {
+        int chiSoGiua = chiSoDau + (chiSoCuoi - chiSoDau) / 2;
+
+        if (a[chiSoGiua] == target) {
+            return chiSoGiua;
+        }
+
+        // Kiểm tra xem nửa bên trái (từ chiSoDau đến chiSoGiua) có đang tăng dần không
+        bool nuaTraiTangDan = (a[chiSoDau] <= a[chiSoGiua]);
+
+        if (nuaTraiTangDan == true) {
+            // Nửa trái đang tăng dần, kiểm tra target có nằm trong nửa trái không
+            if (a[chiSoDau] <= target && target < a[chiSoGiua]) {
+                chiSoCuoi = chiSoGiua - 1;
+            } else {
+                chiSoDau = chiSoGiua + 1;
+            }
+        } else {
+            // Nửa phải đang tăng dần, kiểm tra target có nằm trong nửa phải không
+            if (a[chiSoGiua] < target && target <= a[chiSoCuoi]) {
+                chiSoDau = chiSoGiua + 1;
+            } else {
+                chiSoCuoi = chiSoGiua - 1;
+            }
         }
     }
+
     return -1;
 }
-```
-```python
-def search_rotated(a, target):
-    lo, hi = 0, len(a) - 1
-    while lo <= hi:
-        mid = (lo + hi) // 2
-        if a[mid] == target: return mid
-        if a[lo] <= a[mid]:
-            if a[lo] <= target < a[mid]: hi = mid - 1
-            else: lo = mid + 1
-        else:
-            if a[mid] < target <= a[hi]: lo = mid + 1
-            else: hi = mid - 1
-    return -1
-```
 
-### Ví dụ 3 (Khó) — Tìm kiếm nhị phân trên hàm không tường minh (Implicit Binary Search)
-Bài toán: cho n giếng nước và m trạm bơm, xây trạm bơm để giếng gần nhất luôn trong bán kính r. Tìm bán kính r **nhỏ nhất** để mọi giếng đều được phủ. Ở đây không có "mảng" tường minh để tìm kiếm — mà là tìm kiếm trên **không gian đáp án liên tục** (số thực).
+int main() {
+    vector<int> a = {4, 5, 6, 7, 0, 1, 2};
+    int target = 0;
 
-**Phân tích:** Nếu bán kính r khả thi (phủ được hết giếng), thì mọi r' > r chắc chắn cũng khả thi (tính đơn điệu) → áp dụng nhị phân, kiểm tra `check(r)` bằng cách khác (không so sánh mảng), sẽ học chi tiết ở mục 4.3.
+    cout << timKiemTrenMangBiXoay(a, target) << endl;
 
-**Bài tập minh hoạ:** Tìm phần tử "đỉnh núi" (peak element) trong mảng — phần tử lớn hơn cả 2 phần tử lân cận (biên coi như -∞).
-
-**Lời giải:** Dù mảng không sắp xếp toàn cục, luôn tồn tại đỉnh núi và có thể tìm bằng nhị phân: nếu `a[mid] < a[mid+1]`, đỉnh núi chắc chắn nằm bên phải `mid` (dốc đang lên); ngược lại nằm ở `mid` hoặc bên trái.
-```cpp
-int findPeakElement(vector<int> &a) {
-    int lo = 0, hi = a.size() - 1;
-    while (lo < hi) {
-        int mid = lo + (hi - lo) / 2;
-        if (a[mid] < a[mid+1]) lo = mid + 1;
-        else hi = mid;
-    }
-    return lo;
+    return 0;
 }
 ```
 ```python
-def find_peak_element(a):
-    lo, hi = 0, len(a) - 1
-    while lo < hi:
-        mid = (lo + hi) // 2
-        if a[mid] < a[mid+1]: lo = mid + 1
-        else: hi = mid
-    return lo
+def tim_kiem_tren_mang_bi_xoay(a, target):
+    chi_so_dau = 0
+    chi_so_cuoi = len(a) - 1
+
+    while chi_so_dau <= chi_so_cuoi:
+        chi_so_giua = chi_so_dau + (chi_so_cuoi - chi_so_dau) // 2
+
+        if a[chi_so_giua] == target:
+            return chi_so_giua
+
+        nua_trai_tang_dan = a[chi_so_dau] <= a[chi_so_giua]
+
+        if nua_trai_tang_dan == True:
+            if a[chi_so_dau] <= target and target < a[chi_so_giua]:
+                chi_so_cuoi = chi_so_giua - 1
+            else:
+                chi_so_dau = chi_so_giua + 1
+        else:
+            if a[chi_so_giua] < target and target <= a[chi_so_cuoi]:
+                chi_so_dau = chi_so_giua + 1
+            else:
+                chi_so_cuoi = chi_so_giua - 1
+
+    return -1
+
+
+a = [4, 5, 6, 7, 0, 1, 2]
+target = 0
+
+print(tim_kiem_tren_mang_bi_xoay(a, target))
+```
+
+### Ví dụ 3 (Khó) — Tìm kiếm nhị phân trên một hàm không tường minh
+
+Bài toán: có n giếng nước và m trạm bơm cần xây dựng, sao cho khoảng cách từ mỗi giếng nước tới trạm bơm gần nhất không vượt quá bán kính r. Hãy tìm bán kính r **nhỏ nhất có thể** để mọi giếng đều được phủ sóng.
+
+**Phân tích:** Ở đây không có một "mảng" cụ thể để tìm kiếm. Nhưng nếu bán kính r là khả thi (mọi giếng đều được phủ), thì chắc chắn mọi bán kính lớn hơn r cũng khả thi. Đây chính là tính chất **đơn điệu**, cho phép ta áp dụng tìm kiếm nhị phân trên giá trị r, với một hàm `check(r)` để kiểm tra tính khả thi. Kỹ thuật này sẽ được trình bày chi tiết ở mục 4.3.
+
+**Bài tập minh hoạ:** Cho một mảng số nguyên, tìm một phần tử được gọi là "đỉnh núi" — tức là phần tử đó lớn hơn cả 2 phần tử đứng liền kề bên trái và bên phải nó (coi 2 đầu mảng là âm vô cùng).
+
+**Lời giải:** Dù mảng không sắp xếp toàn bộ, ta vẫn có thể tìm đỉnh núi bằng tìm kiếm nhị phân. Nếu `a[chiSoGiua] < a[chiSoGiua + 1]`, nghĩa là dãy số đang đi lên tại vị trí đó, nên đỉnh núi chắc chắn nằm ở bên phải của `chiSoGiua`.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+int timDinhNui(vector<int> a) {
+    int chiSoDau = 0;
+    int chiSoCuoi = (int)a.size() - 1;
+
+    while (chiSoDau < chiSoCuoi) {
+        int chiSoGiua = chiSoDau + (chiSoCuoi - chiSoDau) / 2;
+
+        if (a[chiSoGiua] < a[chiSoGiua + 1]) {
+            // Dãy số đang đi lên, đỉnh núi nằm bên phải
+            chiSoDau = chiSoGiua + 1;
+        } else {
+            // Dãy số đang đi xuống (hoặc đứng yên), đỉnh núi nằm ở chiSoGiua hoặc bên trái
+            chiSoCuoi = chiSoGiua;
+        }
+    }
+
+    return chiSoDau;
+}
+
+int main() {
+    vector<int> a = {1, 3, 5, 8, 4, 2};
+
+    cout << "Vi tri dinh nui: " << timDinhNui(a) << endl;
+
+    return 0;
+}
+```
+```python
+def tim_dinh_nui(a):
+    chi_so_dau = 0
+    chi_so_cuoi = len(a) - 1
+
+    while chi_so_dau < chi_so_cuoi:
+        chi_so_giua = chi_so_dau + (chi_so_cuoi - chi_so_dau) // 2
+
+        if a[chi_so_giua] < a[chi_so_giua + 1]:
+            chi_so_dau = chi_so_giua + 1
+        else:
+            chi_so_cuoi = chi_so_giua
+
+    return chi_so_dau
+
+
+a = [1, 3, 5, 8, 4, 2]
+print("Vi tri dinh nui:", tim_dinh_nui(a))
 ```
 
 ---
 
 ## 4.3. Tìm kiếm nhị phân trên đáp án (Binary Search on Answer)
 
-**Nêu bài toán:** Có n cuốn sách với số trang `p[i]`, cần chia cho k người sao cho mỗi người nhận một đoạn sách **liên tiếp**, và người nhận nhiều trang nhất phải nhận **ít trang nhất có thể** (minimize the maximum).
+**Nêu bài toán:** Có n cuốn sách với số trang cho trước, cần chia số sách này cho k người, mỗi người nhận một đoạn sách **liên tiếp nhau**. Hãy tìm cách chia sao cho người nhận nhiều trang nhất phải nhận **ít trang nhất có thể được** (tối thiểu hoá giá trị lớn nhất).
 
-**Phân tích:** Đây **không phải** bài toán tìm kiếm trên mảng có sẵn — mà là bài toán **tối ưu hoá**. Nhận thấy: nếu với ngưỡng trang tối đa X ta có thể chia sách sao cho không ai vượt quá X trang (dùng ≤ k người), thì **mọi X' > X** chắc chắn cũng chia được (tính đơn điệu). Đây chính là điều kiện để áp dụng tìm kiếm nhị phân — không tìm trên mảng, mà tìm trên **không gian giá trị đáp án**.
+**Phân tích:** Đây không phải bài toán tìm kiếm trên một mảng có sẵn, mà là bài toán **tối ưu hoá**. Ta nhận thấy: nếu với một ngưỡng số trang X, ta có thể chia sách sao cho không ai phải nhận vượt quá X trang (mà vẫn dùng không quá k người), thì với **mọi ngưỡng X' lớn hơn X**, ta chắc chắn cũng chia được. Đây chính là tính chất đơn điệu cho phép áp dụng tìm kiếm nhị phân — nhưng lần này ta tìm trên **không gian giá trị đáp án**, không phải trên mảng.
 
-**Giải pháp đơn thuần:** Thử lần lượt từng giá trị X từ nhỏ đến lớn, kiểm tra tính khả thi — độ phức tạp O(tổng_trang × n), quá chậm khi tổng trang lớn.
+**Giải pháp đơn thuần:** Thử lần lượt từng giá trị X từ nhỏ đến lớn, với mỗi X kiểm tra xem có chia được không. Cách này đúng nhưng rất chậm nếu tổng số trang lớn.
 
-**Khó khăn:** Với tổng trang có thể lên tới 10^9, thử tuần tự từng giá trị là bất khả thi.
+**Khó khăn với giải pháp đơn thuần:** Nếu tổng số trang lên tới hàng tỷ, việc thử từng giá trị một là không khả thi trong giới hạn thời gian cho phép.
 
-**Cách tiếp cận mới:** Nhị phân trên **giá trị đáp án X**: với mỗi X thử nghiệm, dùng hàm `check(X)` (thường tham lam, O(n)) để kiểm tra tính khả thi, thu hẹp khoảng nhị phân dựa vào kết quả `check`.
+**Cách tiếp cận mới:** Áp dụng tìm kiếm nhị phân trên giá trị đáp án X. Với mỗi giá trị X được thử, ta dùng một hàm kiểm tra `check(X)` (thường chạy trong O(n)) để xác định X có khả thi hay không, rồi thu hẹp khoảng tìm kiếm dựa vào kết quả đó.
 
-### Cách nhận diện bài toán binary search on answer
-- Đề bài hỏi "giá trị nhỏ nhất/lớn nhất sao cho..." (minimize the maximum / maximize the minimum).
-- Tồn tại hàm kiểm tra `check(x)` chạy nhanh (thường O(n) hoặc O(n log n)).
-- Tính chất **đơn điệu**: nếu x khả thi thì mọi giá trị "tốt hơn x" cũng khả thi.
+### Dấu hiệu nhận biết bài toán dạng này
+- Đề bài hỏi "giá trị nhỏ nhất/lớn nhất sao cho..." (tối thiểu hoá giá trị lớn nhất, hoặc tối đa hoá giá trị nhỏ nhất).
+- Tồn tại một hàm kiểm tra `check(x)` chạy nhanh.
+- Tính chất đơn điệu: nếu x là khả thi thì mọi giá trị "tốt hơn x" cũng khả thi.
 
-### Code khung mẫu
+### Ví dụ 1 (Dễ) — Bài toán Koko ăn chuối
+
+Bài toán: có n đống chuối, đống thứ i có số lượng `soChuoi[i]` quả. Koko ăn với tốc độ k quả mỗi giờ (mỗi giờ chỉ được ăn từ 1 đống; nếu đống đó ít hơn k quả thì Koko ăn hết đống đó rồi nghỉ phần thời gian còn lại của giờ đó). Có h giờ để ăn hết tất cả. Hãy tìm tốc độ k **nhỏ nhất** để Koko ăn hết trong h giờ.
+
 ```cpp
-long long lo = LOWER_BOUND, hi = UPPER_BOUND, ans = -1;
-while (lo <= hi) {
-    long long mid = lo + (hi - lo) / 2;
-    if (check(mid)) {       // mid khả thi -> thử giá trị nhỏ hơn (nếu đang tìm min)
-        ans = mid;
-        hi = mid - 1;
-    } else {
-        lo = mid + 1;
+#include <bits/stdc++.h>
+using namespace std;
+
+bool kiemTraCoTheAnHet(vector<int> soChuoi, int tocDo, int soGio) {
+    long long tongSoGioCanDung = 0;
+
+    for (int i = 0; i < (int)soChuoi.size(); i++) {
+        // Số giờ cần để ăn hết đống thứ i là ceil(soChuoi[i] / tocDo)
+        long long soGioChoDongNay = (soChuoi[i] + tocDo - 1) / tocDo;
+        tongSoGioCanDung = tongSoGioCanDung + soGioChoDongNay;
     }
+
+    return tongSoGioCanDung <= soGio;
+}
+
+int timTocDoAnNhoNhat(vector<int> soChuoi, int soGio) {
+    int tocDoNhoNhat = 1;
+    int tocDoLonNhat = 0;
+    for (int i = 0; i < (int)soChuoi.size(); i++) {
+        if (soChuoi[i] > tocDoLonNhat) {
+            tocDoLonNhat = soChuoi[i];
+        }
+    }
+
+    int ketQua = tocDoLonNhat;
+
+    while (tocDoNhoNhat <= tocDoLonNhat) {
+        int tocDoGiua = tocDoNhoNhat + (tocDoLonNhat - tocDoNhoNhat) / 2;
+
+        if (kiemTraCoTheAnHet(soChuoi, tocDoGiua, soGio) == true) {
+            // tocDoGiua khả thi, thử tìm tốc độ nhỏ hơn
+            ketQua = tocDoGiua;
+            tocDoLonNhat = tocDoGiua - 1;
+        } else {
+            // tocDoGiua không đủ nhanh, cần tăng tốc độ
+            tocDoNhoNhat = tocDoGiua + 1;
+        }
+    }
+
+    return ketQua;
+}
+
+int main() {
+    vector<int> soChuoi = {3, 6, 7, 11};
+    int soGio = 8;
+
+    cout << timTocDoAnNhoNhat(soChuoi, soGio) << endl;
+
+    return 0;
 }
 ```
 ```python
-lo, hi, ans = LOWER_BOUND, UPPER_BOUND, -1
-while lo <= hi:
-    mid = (lo + hi) // 2
-    if check(mid):
-        ans = mid
-        hi = mid - 1
+def kiem_tra_co_the_an_het(so_chuoi, toc_do, so_gio):
+    tong_so_gio_can_dung = 0
+
+    for so_luong in so_chuoi:
+        # Số giờ cần để ăn hết đống này là ceil(so_luong / toc_do)
+        so_gio_cho_dong_nay = (so_luong + toc_do - 1) // toc_do
+        tong_so_gio_can_dung = tong_so_gio_can_dung + so_gio_cho_dong_nay
+
+    return tong_so_gio_can_dung <= so_gio
+
+
+def tim_toc_do_an_nho_nhat(so_chuoi, so_gio):
+    toc_do_nho_nhat = 1
+    toc_do_lon_nhat = max(so_chuoi)
+    ket_qua = toc_do_lon_nhat
+
+    while toc_do_nho_nhat <= toc_do_lon_nhat:
+        toc_do_giua = toc_do_nho_nhat + (toc_do_lon_nhat - toc_do_nho_nhat) // 2
+
+        if kiem_tra_co_the_an_het(so_chuoi, toc_do_giua, so_gio) == True:
+            ket_qua = toc_do_giua
+            toc_do_lon_nhat = toc_do_giua - 1
+        else:
+            toc_do_nho_nhat = toc_do_giua + 1
+
+    return ket_qua
+
+
+so_chuoi = [3, 6, 7, 11]
+so_gio = 8
+
+print(tim_toc_do_an_nho_nhat(so_chuoi, so_gio))
+```
+
+### Ví dụ 2 (Trung bình) — Chia sách cho k người
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+bool kiemTraCoTheChiaDuoc(vector<int> soTrang, int soNguoi, long long soTrangToiDaMoiNguoi) {
+    int soNguoiDaDung = 1;
+    long long soTrangHienTai = 0;
+
+    for (int i = 0; i < (int)soTrang.size(); i++) {
+        // Nếu 1 cuốn sách đã vượt quá ngưỡng, không thể chia được
+        if (soTrang[i] > soTrangToiDaMoiNguoi) {
+            return false;
+        }
+
+        if (soTrangHienTai + soTrang[i] > soTrangToiDaMoiNguoi) {
+            // Người hiện tại đã đầy, chuyển sang người tiếp theo
+            soNguoiDaDung = soNguoiDaDung + 1;
+            soTrangHienTai = soTrang[i];
+        } else {
+            soTrangHienTai = soTrangHienTai + soTrang[i];
+        }
+    }
+
+    return soNguoiDaDung <= soNguoi;
+}
+
+long long timSoTrangLonNhatNhoNhat(vector<int> soTrang, int soNguoi) {
+    long long canDuoi = 0;
+    long long tongTatCa = 0;
+
+    for (int i = 0; i < (int)soTrang.size(); i++) {
+        if (soTrang[i] > canDuoi) {
+            canDuoi = soTrang[i];
+        }
+        tongTatCa = tongTatCa + soTrang[i];
+    }
+
+    long long canTren = tongTatCa;
+    long long ketQua = tongTatCa;
+
+    while (canDuoi <= canTren) {
+        long long giuaKhoang = canDuoi + (canTren - canDuoi) / 2;
+
+        if (kiemTraCoTheChiaDuoc(soTrang, soNguoi, giuaKhoang) == true) {
+            ketQua = giuaKhoang;
+            canTren = giuaKhoang - 1;
+        } else {
+            canDuoi = giuaKhoang + 1;
+        }
+    }
+
+    return ketQua;
+}
+
+int main() {
+    vector<int> soTrang = {100, 200, 300, 400, 500};
+    int soNguoi = 3;
+
+    cout << timSoTrangLonNhatNhoNhat(soTrang, soNguoi) << endl;
+
+    return 0;
+}
+```
+```python
+def kiem_tra_co_the_chia_duoc(so_trang, so_nguoi, so_trang_toi_da_moi_nguoi):
+    so_nguoi_da_dung = 1
+    so_trang_hien_tai = 0
+
+    for trang in so_trang:
+        if trang > so_trang_toi_da_moi_nguoi:
+            return False
+
+        if so_trang_hien_tai + trang > so_trang_toi_da_moi_nguoi:
+            so_nguoi_da_dung = so_nguoi_da_dung + 1
+            so_trang_hien_tai = trang
+        else:
+            so_trang_hien_tai = so_trang_hien_tai + trang
+
+    return so_nguoi_da_dung <= so_nguoi
+
+
+def tim_so_trang_lon_nhat_nho_nhat(so_trang, so_nguoi):
+    can_duoi = max(so_trang)
+    can_tren = sum(so_trang)
+    ket_qua = can_tren
+
+    while can_duoi <= can_tren:
+        giua_khoang = can_duoi + (can_tren - can_duoi) // 2
+
+        if kiem_tra_co_the_chia_duoc(so_trang, so_nguoi, giua_khoang) == True:
+            ket_qua = giua_khoang
+            can_tren = giua_khoang - 1
+        else:
+            can_duoi = giua_khoang + 1
+
+    return ket_qua
+
+
+so_trang = [100, 200, 300, 400, 500]
+so_nguoi = 3
+
+print(tim_so_trang_lon_nhat_nho_nhat(so_trang, so_nguoi))
+```
+
+### Ví dụ 3 (Khó) — Tìm kiếm nhị phân trên số thực
+
+Khi đáp án là một số thực (không phải số nguyên), ta không thể dùng điều kiện dừng `canDuoi <= canTren` như trước, vì số thực không có khái niệm "phần tử liền kề" rõ ràng. Thay vào đó, ta lặp một **số lần cố định** để đạt độ chính xác mong muốn.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+bool check(double banKinh) {
+    // Hàm kiểm tra giả định — trong bài toán thực tế sẽ kiểm tra
+    // xem bán kính này có đủ để phủ hết các giếng nước hay không
+    return banKinh >= 5.0;
+}
+
+int main() {
+    double canDuoi = 0.0;
+    double canTren = 1000000000.0;
+
+    int soLanLap = 0;
+    while (soLanLap < 100) {
+        double giuaKhoang = (canDuoi + canTren) / 2.0;
+
+        if (check(giuaKhoang) == true) {
+            canTren = giuaKhoang;
+        } else {
+            canDuoi = giuaKhoang;
+        }
+
+        soLanLap = soLanLap + 1;
+    }
+
+    cout << fixed << setprecision(6) << canDuoi << endl;
+
+    return 0;
+}
+```
+```python
+def check(ban_kinh):
+    # Hàm kiểm tra giả định
+    return ban_kinh >= 5.0
+
+
+can_duoi = 0.0
+can_tren = 1000000000.0
+
+so_lan_lap = 0
+while so_lan_lap < 100:
+    giua_khoang = (can_duoi + can_tren) / 2.0
+
+    if check(giua_khoang) == True:
+        can_tren = giua_khoang
     else:
-        lo = mid + 1
+        can_duoi = giua_khoang
+
+    so_lan_lap = so_lan_lap + 1
+
+print(round(can_duoi, 6))
 ```
 
-### Ví dụ 1 (Dễ) — Koko ăn chuối (Koko Eating Bananas)
-Bài toán: n đống chuối, đống i có `piles[i]` quả. Koko ăn với tốc độ k quả/giờ (mỗi giờ chỉ ăn từ 1 đống, nếu đống ít hơn k thì ăn hết đống đó và nghỉ phần giờ còn lại). Có h giờ. Tìm tốc độ k **nhỏ nhất** để ăn hết trong h giờ.
-```cpp
-bool canFinish(vector<int> &piles, int k, int h) {
-    long long hours = 0;
-    for (int p : piles) hours += (p + k - 1) / k; // ceil(p / k)
-    return hours <= h;
-}
-int minEatingSpeed(vector<int> &piles, int h) {
-    int lo = 1, hi = *max_element(piles.begin(), piles.end()), ans = hi;
-    while (lo <= hi) {
-        int mid = lo + (hi - lo) / 2;
-        if (canFinish(piles, mid, h)) { ans = mid; hi = mid - 1; }
-        else lo = mid + 1;
-    }
-    return ans;
-}
-```
-```python
-def min_eating_speed(piles, h):
-    def can_finish(k):
-        return sum((p + k - 1) // k for p in piles) <= h
-    lo, hi, ans = 1, max(piles), max(piles)
-    while lo <= hi:
-        mid = (lo + hi) // 2
-        if can_finish(mid): ans, hi = mid, mid - 1
-        else: lo = mid + 1
-    return ans
-```
+**Bài tập minh hoạ:** Cho một mảng gồm n số nguyên dương và một số nguyên m, hãy chia mảng thành **đúng m đoạn con liên tiếp**, sao cho tổng lớn nhất trong các đoạn đó là **nhỏ nhất có thể được**.
 
-### Ví dụ 2 (Trung bình) — Chia sách cho k người (Book Allocation / Split Array Largest Sum)
-```cpp
-bool canAllocate(vector<int> &pages, int k, long long maxPages) {
-    int people = 1;
-    long long current = 0;
-    for (int p : pages) {
-        if (p > maxPages) return false; // 1 cuốn đã vượt quá ngưỡng -> không khả thi
-        if (current + p > maxPages) { people++; current = p; }
-        else current += p;
-    }
-    return people <= k;
-}
-long long minLargestSum(vector<int> &pages, int k) {
-    long long lo = *max_element(pages.begin(), pages.end());
-    long long hi = accumulate(pages.begin(), pages.end(), 0LL);
-    long long ans = hi;
-    while (lo <= hi) {
-        long long mid = lo + (hi - lo) / 2;
-        if (canAllocate(pages, k, mid)) { ans = mid; hi = mid - 1; }
-        else lo = mid + 1;
-    }
-    return ans;
-}
-```
-```python
-def min_largest_sum(pages, k):
-    def can_allocate(max_pages):
-        people, current = 1, 0
-        for p in pages:
-            if p > max_pages: return False
-            if current + p > max_pages:
-                people += 1; current = p
-            else:
-                current += p
-        return people <= k
-
-    lo, hi, ans = max(pages), sum(pages), sum(pages)
-    while lo <= hi:
-        mid = (lo + hi) // 2
-        if can_allocate(mid): ans, hi = mid, mid - 1
-        else: lo = mid + 1
-    return ans
-```
-
-### Ví dụ 3 (Khó) — Nhị phân trên số thực (giếng nước và trạm bơm, tiếp Ví dụ 3 mục 4.2)
-Với đáp án là số thực, thay vì dùng điều kiện dừng `lo <= hi`, dùng **số vòng lặp cố định** (vì độ chính xác số thực không có "phần tử liền kề" rõ ràng như số nguyên).
-```cpp
-double lo = 0.0, hi = 1e9;
-for (int iter = 0; iter < 100; iter++) { // 100 vòng đủ để đạt độ chính xác ~10^-30
-    double mid = (lo + hi) / 2.0;
-    if (check(mid)) hi = mid;
-    else lo = mid;
-}
-// đáp án xấp xỉ lo (hoặc hi, giá trị 2 biến đã hội tụ đủ gần nhau)
-```
-```python
-lo, hi = 0.0, 1e9
-for _ in range(100):
-    mid = (lo + hi) / 2
-    if check(mid): hi = mid
-    else: lo = mid
-```
-
-**Bài tập minh hoạ:** Cho mảng n số nguyên dương và số nguyên m, tìm cách chia mảng thành **đúng m đoạn con liên tiếp** sao cho tổng lớn nhất trong các đoạn là **nhỏ nhất có thể**.
-
-**Lời giải:** Đây chính là bài "Split Array Largest Sum" — về bản chất giống hệt Ví dụ 2 (chia sách), chỉ khác tên gọi. Đây là minh chứng cho kỹ năng "nhận diện bài toán lõi" đã học ở Chương 1 — cùng 1 kỹ thuật, nhiều lớp vỏ bài toán khác nhau. Code giống hệt `minLargestSum` ở trên, thay `pages` bằng mảng đề cho, `k` bằng `m`.
+**Lời giải:** Đây thực chất chính là bài toán "chia sách cho k người" ở Ví dụ 2, chỉ khác tên gọi. Cách giải hoàn toàn giống hàm `timSoTrangLonNhatNhoNhat`/`tim_so_trang_lon_nhat_nho_nhat` ở trên, chỉ cần thay mảng số trang bằng mảng số đề cho, và thay số người bằng số đoạn m.
 
 ---
 
 ## 4.4. Tìm kiếm tam phân (Ternary Search)
 
-**Nêu bài toán:** Cho một hàm số `f(x)` có dạng **đơn mốt** (unimodal) — tăng dần rồi giảm dần (hoặc ngược lại), tìm giá trị x tại đó `f(x)` đạt cực trị (max hoặc min).
+**Nêu bài toán:** Cho một hàm số `f(x)` có dạng "đơn mốt" (unimodal), nghĩa là hàm tăng dần rồi giảm dần (hoặc ngược lại, giảm dần rồi tăng dần), chỉ có duy nhất 1 đỉnh hoặc 1 đáy. Hãy tìm giá trị x để `f(x)` đạt giá trị lớn nhất (hoặc nhỏ nhất).
 
-**Phân tích:** Tìm kiếm nhị phân dựa vào so sánh **bằng/khác** một target cụ thể — không áp dụng trực tiếp được cho bài toán tìm cực trị. Cần một biến thể khác: chia không gian tìm kiếm thành **3 phần** thay vì 2, so sánh giá trị hàm tại 2 điểm chia để loại bỏ 1/3 không gian mỗi bước.
+**Phân tích:** Tìm kiếm nhị phân dựa vào việc so sánh bằng hoặc khác với một giá trị mục tiêu cụ thể, nên không áp dụng trực tiếp được cho bài toán tìm cực trị của hàm số. Ta cần một kỹ thuật khác.
 
-**Giải pháp đơn thuần:** Duyệt qua tất cả giá trị x có thể, tính f(x) và so sánh — O(n), không khả thi khi không gian x rất lớn hoặc là số thực.
+**Giải pháp đơn thuần:** Duyệt qua tất cả các giá trị x có thể có, tính `f(x)` với từng giá trị rồi so sánh để tìm cực trị. Cách này tốn O(n) và không dùng được khi x là số thực (có vô số giá trị).
 
-**Cách tiếp cận mới:** Ternary Search — mỗi bước chọn 2 điểm `m1, m2` chia đoạn `[lo, hi]` thành 3 phần bằng nhau, so sánh `f(m1)` với `f(m2)` để xác định cực trị nằm ở 2/3 đoạn nào, loại bỏ 1/3 còn lại.
+**Cách tiếp cận mới:** Sử dụng tìm kiếm tam phân. Ở mỗi bước, ta chọn 2 điểm chia đoạn `[canDuoi, canTren]` thành 3 phần bằng nhau, gọi là `diem1` và `diem2`. So sánh `f(diem1)` với `f(diem2)` để xác định cực trị nằm ở 2/3 đoạn nào, rồi loại bỏ 1/3 đoạn còn lại.
 
-### Code khung mẫu (tìm cực đại của hàm đơn mốt)
+### Ví dụ 1 (Dễ) — Tìm giá trị nhỏ nhất của hàm bậc 2
+
 ```cpp
-double ternarySearchMax(function<double(double)> f, double lo, double hi) {
-    for (int iter = 0; iter < 100; iter++) {
-        double m1 = lo + (hi - lo) / 3;
-        double m2 = hi - (hi - lo) / 3;
-        if (f(m1) < f(m2)) lo = m1; // cực đại không nằm bên trái m1
-        else hi = m2;                // cực đại không nằm bên phải m2
+#include <bits/stdc++.h>
+using namespace std;
+
+double tinhHamSo(double x) {
+    // Hàm parabol có giá trị nhỏ nhất tại x = 3
+    return (x - 3) * (x - 3) + 5;
+}
+
+double timGiaTriNhoNhat(double canDuoi, double canTren) {
+    int soLanLap = 0;
+    while (soLanLap < 100) {
+        double diem1 = canDuoi + (canTren - canDuoi) / 3.0;
+        double diem2 = canTren - (canTren - canDuoi) / 3.0;
+
+        if (tinhHamSo(diem1) > tinhHamSo(diem2)) {
+            // Giá trị nhỏ nhất không nằm bên trái diem1
+            canDuoi = diem1;
+        } else {
+            // Giá trị nhỏ nhất không nằm bên phải diem2
+            canTren = diem2;
+        }
+
+        soLanLap = soLanLap + 1;
     }
-    return (lo + hi) / 2;
+
+    return (canDuoi + canTren) / 2.0;
+}
+
+int main() {
+    double ketQua = timGiaTriNhoNhat(-100.0, 100.0);
+    cout << fixed << setprecision(6) << ketQua << endl;
+
+    return 0;
 }
 ```
 ```python
-def ternary_search_max(f, lo, hi):
-    for _ in range(100):
-        m1 = lo + (hi - lo) / 3
-        m2 = hi - (hi - lo) / 3
-        if f(m1) < f(m2): lo = m1
-        else: hi = m2
-    return (lo + hi) / 2
+def tinh_ham_so(x):
+    # Hàm parabol có giá trị nhỏ nhất tại x = 3
+    return (x - 3) * (x - 3) + 5
+
+
+def tim_gia_tri_nho_nhat(can_duoi, can_tren):
+    so_lan_lap = 0
+    while so_lan_lap < 100:
+        diem1 = can_duoi + (can_tren - can_duoi) / 3.0
+        diem2 = can_tren - (can_tren - can_duoi) / 3.0
+
+        if tinh_ham_so(diem1) > tinh_ham_so(diem2):
+            can_duoi = diem1
+        else:
+            can_tren = diem2
+
+        so_lan_lap = so_lan_lap + 1
+
+    return (can_duoi + can_tren) / 2.0
+
+
+ket_qua = tim_gia_tri_nho_nhat(-100.0, 100.0)
+print(round(ket_qua, 6))
 ```
 
-> **Điều kiện bắt buộc:** hàm phải thực sự **đơn mốt** (unimodal) trên đoạn `[lo, hi]` — chỉ có đúng 1 đỉnh (hoặc đáy). Nếu hàm có nhiều cực trị cục bộ, ternary search có thể cho kết quả sai — khác với binary search on answer (mục 4.3) chỉ cần tính **đơn điệu** của hàm kiểm tra, ternary search cần tính chất mạnh hơn.
+### Ví dụ 2 (Trung bình) — Tìm điểm gần nhất trên đoạn thẳng
 
-### Ví dụ 1 (Dễ) — Tìm cực tiểu của hàm bậc 2
-```cpp
-double f(double x) { return (x - 3) * (x - 3) + 5; } // parabol, cực tiểu tại x=3
-// ternarySearchMin tương tự ternarySearchMax nhưng đảo điều kiện so sánh
-```
+Bài toán: cho một điểm P và một đoạn thẳng AB, tìm khoảng cách ngắn nhất từ điểm P đến một điểm bất kỳ nằm trên đoạn AB.
 
-### Ví dụ 2 (Trung bình) — Tìm điểm trên đoạn thẳng gần 1 điểm cho trước nhất
-Bài toán: cho 1 điểm P và 1 đoạn thẳng AB, tìm khoảng cách ngắn nhất từ P đến 1 điểm bất kỳ trên đoạn AB.
 ```cpp
-double distFromPointOnSegment(double t, Point A, Point B, Point P) {
-    // t trong [0,1] tham số hoá điểm trên đoạn AB
-    double x = A.x + t * (B.x - A.x), y = A.y + t * (B.y - A.y);
-    return sqrt((x - P.x)*(x - P.x) + (y - P.y)*(y - P.y));
+#include <bits/stdc++.h>
+using namespace std;
+
+double tinhKhoangCach(double thamSoT, double Ax, double Ay, double Bx, double By, double Px, double Py) {
+    // thamSoT nằm trong đoạn [0, 1], dùng để xác định 1 điểm trên đoạn AB
+    double x = Ax + thamSoT * (Bx - Ax);
+    double y = Ay + thamSoT * (By - Ay);
+
+    double khoangCach = sqrt((x - Px) * (x - Px) + (y - Py) * (y - Py));
+    return khoangCach;
 }
-// Hàm khoảng cách theo t là đơn mốt (giảm dần rồi tăng dần) -> áp dụng ternary search tìm t tối ưu
-```
 
-### Ví dụ 3 (Khó) — Ternary Search trên mảng số nguyên rời rạc (không phải hàm liên tục)
-Với mảng số nguyên đơn mốt (tăng rồi giảm), có thể dùng ternary search rời rạc, nhưng **binary search kiểu "tìm đỉnh núi"** (đã học ở Ví dụ 3, mục 4.2 — `findPeakElement`) thường đơn giản và hiệu quả hơn cho trường hợp rời rạc. Đây là lưu ý quan trọng: **không phải mọi bài toán "tìm cực trị" đều cần ternary search** — nếu chuyển được về dạng so sánh 2 phần tử liền kề như `findPeakElement`, nên ưu tiên binary search vì cài đặt đơn giản hơn và không có vấn đề độ chính xác số thực.
+int main() {
+    double Ax = 0.0, Ay = 0.0;
+    double Bx = 10.0, By = 0.0;
+    double Px = 5.0, Py = 5.0;
 
-**Bài tập minh hoạ:** Cho hàm chi phí `cost(x) = a*x^2 + b*x + c` với a > 0 (parabol lõm lên trên), tìm giá trị x nguyên để `cost(x)` nhỏ nhất.
+    double canDuoi = 0.0;
+    double canTren = 1.0;
 
-**Lời giải:** Vì hàm là đơn mốt (chỉ có 1 cực tiểu), áp dụng ternary search trên số nguyên (dùng `lo < hi - 2` làm điều kiện dừng để tránh vòng lặp vô hạn do làm tròn số nguyên):
-```cpp
-long long ternarySearchIntMin(function<long long(long long)> cost, long long lo, long long hi) {
-    while (hi - lo > 2) {
-        long long m1 = lo + (hi - lo) / 3;
-        long long m2 = hi - (hi - lo) / 3;
-        if (cost(m1) < cost(m2)) hi = m2;
-        else lo = m1;
+    int soLanLap = 0;
+    while (soLanLap < 100) {
+        double diem1 = canDuoi + (canTren - canDuoi) / 3.0;
+        double diem2 = canTren - (canTren - canDuoi) / 3.0;
+
+        double khoangCachDiem1 = tinhKhoangCach(diem1, Ax, Ay, Bx, By, Px, Py);
+        double khoangCachDiem2 = tinhKhoangCach(diem2, Ax, Ay, Bx, By, Px, Py);
+
+        if (khoangCachDiem1 > khoangCachDiem2) {
+            canDuoi = diem1;
+        } else {
+            canTren = diem2;
+        }
+
+        soLanLap = soLanLap + 1;
     }
-    long long best = lo;
-    for (long long x = lo; x <= hi; x++) if (cost(x) < cost(best)) best = x; // duyệt nốt đoạn nhỏ còn lại
-    return best;
+
+    double thamSoTToiUu = (canDuoi + canTren) / 2.0;
+    cout << fixed << setprecision(6);
+    cout << tinhKhoangCach(thamSoTToiUu, Ax, Ay, Bx, By, Px, Py) << endl;
+
+    return 0;
 }
+```
+```python
+import math
+
+
+def tinh_khoang_cach(tham_so_t, Ax, Ay, Bx, By, Px, Py):
+    x = Ax + tham_so_t * (Bx - Ax)
+    y = Ay + tham_so_t * (By - Ay)
+
+    khoang_cach = math.sqrt((x - Px) * (x - Px) + (y - Py) * (y - Py))
+    return khoang_cach
+
+
+Ax, Ay = 0.0, 0.0
+Bx, By = 10.0, 0.0
+Px, Py = 5.0, 5.0
+
+can_duoi = 0.0
+can_tren = 1.0
+
+so_lan_lap = 0
+while so_lan_lap < 100:
+    diem1 = can_duoi + (can_tren - can_duoi) / 3.0
+    diem2 = can_tren - (can_tren - can_duoi) / 3.0
+
+    khoang_cach_diem1 = tinh_khoang_cach(diem1, Ax, Ay, Bx, By, Px, Py)
+    khoang_cach_diem2 = tinh_khoang_cach(diem2, Ax, Ay, Bx, By, Px, Py)
+
+    if khoang_cach_diem1 > khoang_cach_diem2:
+        can_duoi = diem1
+    else:
+        can_tren = diem2
+
+    so_lan_lap = so_lan_lap + 1
+
+tham_so_t_toi_uu = (can_duoi + can_tren) / 2.0
+print(round(tinh_khoang_cach(tham_so_t_toi_uu, Ax, Ay, Bx, By, Px, Py), 6))
+```
+
+### Ví dụ 3 (Khó) — Khi nào không nên dùng Ternary Search
+
+Với mảng số nguyên có dạng "núi" (tăng rồi giảm), ta có thể dùng ternary search rời rạc, nhưng cách tìm đỉnh núi bằng tìm kiếm nhị phân (xem lại Bài tập minh hoạ ở mục 4.2, hàm `timDinhNui`/`tim_dinh_nui`) thường đơn giản hơn và không gặp vấn đề về độ chính xác số thực. Đây là điều quan trọng cần nhớ: **không phải mọi bài toán "tìm cực trị" đều cần dùng ternary search**.
+
+**Bài tập minh hoạ:** Cho hàm chi phí có dạng `chiPhi(x) = a * x * x + b * x + c`, với `a` là số dương (đồ thị là parabol lõm lên trên). Hãy tìm giá trị x nguyên để `chiPhi(x)` là nhỏ nhất.
+
+**Lời giải:** Vì hàm chỉ có 1 điểm cực tiểu, ta áp dụng tìm kiếm tam phân trên số nguyên. Khi làm việc với số nguyên, ta dừng vòng lặp khi khoảng tìm kiếm còn lại rất nhỏ (ví dụ chỉ còn 3 giá trị), rồi duyệt trực tiếp đoạn nhỏ đó.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+long long tinhChiPhi(long long x, long long a, long long b, long long c) {
+    return a * x * x + b * x + c;
+}
+
+long long timXNguyenNhoNhat(long long canDuoi, long long canTren, long long a, long long b, long long c) {
+    while (canTren - canDuoi > 2) {
+        long long diem1 = canDuoi + (canTren - canDuoi) / 3;
+        long long diem2 = canTren - (canTren - canDuoi) / 3;
+
+        if (tinhChiPhi(diem1, a, b, c) < tinhChiPhi(diem2, a, b, c)) {
+            canTren = diem2;
+        } else {
+            canDuoi = diem1;
+        }
+    }
+
+    // Đoạn còn lại rất nhỏ, duyệt trực tiếp để tìm giá trị tốt nhất
+    long long giaTriTotNhat = canDuoi;
+    for (long long x = canDuoi; x <= canTren; x++) {
+        if (tinhChiPhi(x, a, b, c) < tinhChiPhi(giaTriTotNhat, a, b, c)) {
+            giaTriTotNhat = x;
+        }
+    }
+
+    return giaTriTotNhat;
+}
+
+int main() {
+    long long a = 2, b = -20, c = 55;
+    long long ketQua = timXNguyenNhoNhat(-1000, 1000, a, b, c);
+    cout << ketQua << endl;
+
+    return 0;
+}
+```
+```python
+def tinh_chi_phi(x, a, b, c):
+    return a * x * x + b * x + c
+
+
+def tim_x_nguyen_nho_nhat(can_duoi, can_tren, a, b, c):
+    while can_tren - can_duoi > 2:
+        diem1 = can_duoi + (can_tren - can_duoi) // 3
+        diem2 = can_tren - (can_tren - can_duoi) // 3
+
+        if tinh_chi_phi(diem1, a, b, c) < tinh_chi_phi(diem2, a, b, c):
+            can_tren = diem2
+        else:
+            can_duoi = diem1
+
+    gia_tri_tot_nhat = can_duoi
+    for x in range(can_duoi, can_tren + 1):
+        if tinh_chi_phi(x, a, b, c) < tinh_chi_phi(gia_tri_tot_nhat, a, b, c):
+            gia_tri_tot_nhat = x
+
+    return gia_tri_tot_nhat
+
+
+a, b, c = 2, -20, 55
+ket_qua = tim_x_nguyen_nho_nhat(-1000, 1000, a, b, c)
+print(ket_qua)
 ```
 
 ---
 
 ## Tổng kết Chương 4
 
-- **Sắp xếp với comparator:** luôn nhớ quy tắc "strict weak ordering" — với 2 phần tử bằng nhau, comparator phải trả về `false`.
-- **Tìm kiếm nhị phân cổ điển:** áp dụng khi mảng đã (hoặc có thể coi là) đơn điệu — không chỉ dùng để tìm target, mà còn tìm biên (`lower_bound`/`upper_bound`), tìm đỉnh núi, tìm điểm xoay.
-- **Binary Search on Answer:** kỹ thuật quan trọng nhất chương — nhận diện qua cụm từ "giá trị nhỏ nhất/lớn nhất sao cho...", cần hàm `check()` chạy nhanh và có tính đơn điệu.
-- **Ternary Search:** dùng cho hàm đơn mốt liên tục (số thực) — cẩn trọng: nhiều bài tưởng cần ternary search thực chất có thể giải bằng binary search đơn giản hơn nếu chuyển được về dạng rời rạc so sánh 2 lân cận.
-- **Kỹ năng cốt lõi:** khi thấy đề bài có dạng "tối thiểu hoá giá trị lớn nhất" hoặc "tối đa hoá giá trị nhỏ nhất", phản xạ đầu tiên nên là kiểm tra tính đơn điệu để áp dụng Binary Search on Answer — đây là một trong những kỹ thuật xuất hiện nhiều nhất trong đề thi HSG và Codeforces Div 2.
+- **Sắp xếp với comparator:** luôn nhớ quy tắc — với 2 phần tử bằng nhau, hàm so sánh phải trả về `false` (trong C++) hoặc `0` (trong Python).
+- **Tìm kiếm nhị phân cổ điển:** áp dụng khi mảng đã có thứ tự (hoặc có thể coi là có thứ tự) — không chỉ dùng để tìm 1 giá trị cụ thể, mà còn để tìm vị trí biên, tìm đỉnh núi, tìm điểm xoay.
+- **Tìm kiếm nhị phân trên đáp án (Binary Search on Answer):** kỹ thuật quan trọng nhất chương này — nhận diện qua các cụm từ như "giá trị nhỏ nhất/lớn nhất sao cho...", cần có một hàm kiểm tra `check()` chạy nhanh và có tính đơn điệu.
+- **Tìm kiếm tam phân:** dùng cho hàm có dạng đơn mốt (chỉ có 1 đỉnh hoặc 1 đáy) — cần cẩn thận vì nhiều bài toán tưởng chừng cần ternary search thực ra có thể giải bằng tìm kiếm nhị phân đơn giản hơn.
+- **Kỹ năng cốt lõi cần luyện:** khi thấy đề bài có dạng "tối thiểu hoá giá trị lớn nhất" hoặc "tối đa hoá giá trị nhỏ nhất", hãy nghĩ ngay đến khả năng áp dụng tìm kiếm nhị phân trên đáp án.
 
 ---
 
@@ -462,46 +1181,46 @@ long long ternarySearchIntMin(function<long long(long long)> cost, long long lo,
 ### PHẦN A: ĐỀ BÀI (14 bài, không kèm lời giải)
 
 **Bài 1 — Sort Array by Parity (LeetCode 905) — Dễ**
-Cho mảng số nguyên, sắp xếp sao cho tất cả số chẵn đứng trước, số lẻ đứng sau (không yêu cầu giữ thứ tự trong từng nhóm).
+Cho một mảng số nguyên, hãy sắp xếp lại sao cho tất cả các số chẵn đứng trước, các số lẻ đứng sau (không yêu cầu giữ nguyên thứ tự trong từng nhóm).
 
 **Bài 2 — Merge Intervals (LeetCode 56) — Trung bình**
-Cho danh sách các khoảng (interval), gộp tất cả các khoảng chồng lấn nhau thành khoảng lớn nhất có thể.
+Cho một danh sách các khoảng thời gian, hãy gộp tất cả các khoảng bị chồng lấn nhau thành các khoảng lớn nhất có thể.
 
 **Bài 3 — Custom Sort String (LeetCode 791) — Trung bình**
-Cho 1 chuỗi `order` định nghĩa thứ tự ưu tiên ký tự, sắp xếp chuỗi `s` theo đúng thứ tự đó (ký tự không có trong `order` đặt ở cuối, giữ nguyên thứ tự tương đối).
+Cho một chuỗi `order` định nghĩa thứ tự ưu tiên của các ký tự, hãy sắp xếp chuỗi `s` theo đúng thứ tự ưu tiên đó (những ký tự không xuất hiện trong `order` được đặt ở cuối, giữ nguyên thứ tự tương đối giữa chúng).
 
 **Bài 4 — Binary Search (LeetCode 704) — Dễ**
-Cài đặt tìm kiếm nhị phân cơ bản trên mảng đã sắp xếp, trả về chỉ số hoặc -1.
+Cài đặt thuật toán tìm kiếm nhị phân cơ bản trên một mảng đã được sắp xếp, trả về chỉ số của phần tử cần tìm hoặc -1 nếu không tìm thấy.
 
 **Bài 5 — Find First and Last Position of Element in Sorted Array (LeetCode 34) — Trung bình**
-Cho mảng đã sắp xếp có phần tử trùng lặp, tìm vị trí xuất hiện đầu tiên và cuối cùng của target.
+Cho một mảng đã sắp xếp có thể có phần tử trùng lặp, hãy tìm vị trí xuất hiện đầu tiên và vị trí xuất hiện cuối cùng của một giá trị target cho trước.
 
 **Bài 6 — Search in Rotated Sorted Array (LeetCode 33) — Trung bình**
-Tìm target trong mảng đã sắp xếp nhưng bị xoay tại 1 điểm không xác định.
+Tìm một giá trị target trong một mảng đã sắp xếp nhưng bị xoay tại một điểm không xác định trước.
 
 **Bài 7 — Factory Machines (CSES 1620) — Trung bình**
-Có n máy, máy thứ i cần `t[i]` phút để sản xuất 1 sản phẩm (có thể sản xuất song song nhiều sản phẩm liên tiếp). Tìm thời gian tối thiểu để tổng cộng tất cả các máy sản xuất được ít nhất k sản phẩm.
+Có n máy sản xuất, máy thứ i cần một số phút nhất định để sản xuất ra 1 sản phẩm (các máy có thể chạy song song và mỗi máy có thể sản xuất nhiều sản phẩm liên tiếp nhau). Hãy tìm thời gian tối thiểu để tổng cộng tất cả các máy sản xuất được ít nhất k sản phẩm.
 
 **Bài 8 — Array Division (CSES 1085) — Trung bình**
-Cho mảng n số nguyên, chia thành k đoạn con liên tiếp, tìm cách chia để tổng lớn nhất trong các đoạn là nhỏ nhất có thể (giống Ví dụ 2, mục 4.3 nhưng đổi tên biến).
+Cho một mảng n số nguyên, hãy chia mảng thành k đoạn con liên tiếp, sao cho tổng lớn nhất trong các đoạn con đó là nhỏ nhất có thể được (giống với Ví dụ 2 ở mục 4.3 nhưng dùng tên biến khác).
 
-**Bài 9 — Aggressive Cows (dạng đề phổ biến trên nhiều OJ, gốc từ POI) — Trung bình-Khó**
-Cho n vị trí chuồng bò trên 1 đường thẳng, đặt c con bò vào c chuồng khác nhau sao cho khoảng cách nhỏ nhất giữa 2 con bò bất kỳ là **lớn nhất có thể**. (Lưu ý: đây là bài toán "maximize the minimum" — dạng đối ng�ứng với Ví dụ 1, 2 ở mục 4.3.)
+**Bài 9 — Aggressive Cows (dạng đề phổ biến trên nhiều trang luyện tập) — Trung bình-Khó**
+Cho n vị trí chuồng bò nằm trên một đường thẳng, hãy đặt c con bò vào c chuồng khác nhau sao cho khoảng cách nhỏ nhất giữa 2 con bò bất kỳ là **lớn nhất có thể được**. Đây là bài toán "tối đa hoá giá trị nhỏ nhất" — ngược lại với các bài ở mục 4.3.
 
 **Bài 10 — Median of Two Sorted Arrays (LeetCode 4) — Khó**
-Cho 2 mảng đã sắp xếp kích thước m và n, tìm trung vị (median) của mảng gộp cả 2 mà không cần gộp thực sự, độ phức tạp yêu cầu O(log(min(m,n))).
+Cho 2 mảng đã sắp xếp có kích thước lần lượt là m và n, hãy tìm trung vị (median) của mảng gộp cả 2 mảng lại, mà không cần thực sự gộp chúng, với yêu cầu độ phức tạp là O(log(min(m,n))).
 
 **Bài 11 — Peak Index in a Mountain Array (LeetCode 852) — Dễ-Trung bình**
-Cho mảng dạng "núi" (tăng dần rồi giảm dần), tìm chỉ số của đỉnh núi.
+Cho một mảng có dạng "núi" (tăng dần rồi giảm dần), hãy tìm chỉ số của đỉnh núi.
 
 **Bài 12 — Capacity To Ship Packages Within D Days (LeetCode 1011) — Trung bình**
-Có n kiện hàng cần vận chuyển trong đúng D ngày (theo thứ tự, mỗi ngày chở 1 số kiện liên tiếp không vượt quá sức chứa tàu). Tìm sức chứa tối thiểu của tàu.
+Có n kiện hàng cần được vận chuyển trong đúng D ngày, các kiện hàng phải được chở theo đúng thứ tự cho trước, mỗi ngày chở một số kiện liên tiếp mà không được vượt quá sức chứa của tàu. Hãy tìm sức chứa nhỏ nhất của tàu để hoàn thành việc vận chuyển đúng hạn.
 
-**Bài 13 — Tìm cực trị hàm đơn mốt bằng Ternary Search (tự thiết kế) — Trung bình-Khó**
-Cho hàm `f(x) = |x - 5| + |x - 10| + (x-7)^2 / 100` trên đoạn [0, 20]. Dùng ternary search tìm giá trị x (số thực, sai số cho phép 10^-6) để f(x) đạt giá trị nhỏ nhất.
+**Bài 13 — Tìm cực trị của hàm đơn mốt (tự thiết kế) — Trung bình-Khó**
+Cho hàm số `f(x) = |x - 5| + |x - 10| + (x - 7) * (x - 7) / 100`, xét trên đoạn từ 0 đến 20. Hãy dùng tìm kiếm tam phân để tìm giá trị x (số thực, sai số cho phép là 10 mũ âm 6) sao cho f(x) đạt giá trị nhỏ nhất.
 
-**Bài 14 — Koko Eating Bananas biến thể nhiều ràng buộc (tự thiết kế) — Khó**
-Biến thể Ví dụ 1 (mục 4.3): Koko phải ăn hết trong h giờ, nhưng có thêm ràng buộc mỗi giờ chỉ được ăn tối đa từ 1 trong 2 đống "ưa thích" cho trước (nếu cả 2 đống ưa thích đã hết, mới được ăn đống khác). Tìm tốc độ nhỏ nhất k để vẫn hoàn thành đúng hạn. (Bài rèn kỹ năng viết hàm `check()` phức tạp hơn cho binary search on answer.)
+**Bài 14 — Koko Eating Bananas biến thể có thêm ràng buộc (tự thiết kế) — Khó**
+Biến thể của Ví dụ 1 (mục 4.3): Koko phải ăn hết chuối trong h giờ, nhưng có thêm một ràng buộc là mỗi giờ chỉ được ăn từ 1 trong 2 đống "ưa thích" được chỉ định trước (chỉ khi cả 2 đống ưa thích đã ăn hết mới được chuyển sang ăn đống khác). Hãy tìm tốc độ ăn nhỏ nhất k để Koko vẫn hoàn thành đúng hạn. Đây là bài rèn kỹ năng viết một hàm kiểm tra `check()` phức tạp hơn cho tìm kiếm nhị phân trên đáp án.
 
 ---
 
@@ -510,33 +1229,112 @@ Biến thể Ví dụ 1 (mục 4.3): Koko phải ăn hết trong h giờ, nhưng
 <details>
 <summary>Lời giải Bài 1 — Sort Array by Parity</summary>
 
-Dùng kỹ thuật 2 con trỏ (Chương 6 sẽ học sâu hơn), hoặc đơn giản dùng `partition`/comparator:
 ```cpp
-vector<int> sortArrayByParity(vector<int> &a) {
-    sort(a.begin(), a.end(), [](int x, int y) {
-        return (x % 2) < (y % 2); // chẵn (0) đứng trước lẻ (1)
-    });
+#include <bits/stdc++.h>
+using namespace std;
+
+bool compareChanLe(int soA, int soB) {
+    int soDuA = soA % 2;
+    int soDuB = soB % 2;
+    // Số chẵn (số dư 0) đứng trước số lẻ (số dư 1)
+    return soDuA < soDuB;
+}
+
+vector<int> sapXepChanTruocLeSau(vector<int> a) {
+    sort(a.begin(), a.end(), compareChanLe);
     return a;
 }
+
+int main() {
+    vector<int> a = {3, 1, 2, 4};
+    vector<int> ketQua = sapXepChanTruocLeSau(a);
+    for (int i = 0; i < (int)ketQua.size(); i++) {
+        cout << ketQua[i] << " ";
+    }
+    cout << endl;
+    return 0;
+}
+```
+```python
+def sap_xep_chan_truoc_le_sau(a):
+    def lay_khoa(so):
+        return so % 2  # Số chẵn (0) đứng trước số lẻ (1)
+
+    a_moi = list(a)
+    a_moi.sort(key=lay_khoa)
+    return a_moi
+
+
+a = [3, 1, 2, 4]
+print(sap_xep_chan_truoc_le_sau(a))
 ```
 </details>
 
 <details>
 <summary>Lời giải Bài 2 — Merge Intervals</summary>
 
-Sắp xếp theo điểm bắt đầu, sau đó duyệt và gộp nếu chồng lấn.
 ```cpp
-vector<vector<int>> merge(vector<vector<int>> &intervals) {
-    sort(intervals.begin(), intervals.end());
-    vector<vector<int>> result;
-    for (auto &iv : intervals) {
-        if (!result.empty() && iv[0] <= result.back()[1])
-            result.back()[1] = max(result.back()[1], iv[1]);
-        else
-            result.push_back(iv);
+#include <bits/stdc++.h>
+using namespace std;
+
+vector<vector<int>> gopCacKhoang(vector<vector<int>> danhSachKhoang) {
+    sort(danhSachKhoang.begin(), danhSachKhoang.end());
+
+    vector<vector<int>> ketQua;
+
+    for (int i = 0; i < (int)danhSachKhoang.size(); i++) {
+        int batDau = danhSachKhoang[i][0];
+        int ketThuc = danhSachKhoang[i][1];
+
+        if (ketQua.size() > 0 && batDau <= ketQua.back()[1]) {
+            // Chồng lấn với khoảng cuối cùng đã có, mở rộng khoảng đó
+            if (ketThuc > ketQua.back()[1]) {
+                ketQua.back()[1] = ketThuc;
+            }
+        } else {
+            vector<int> khoangMoi;
+            khoangMoi.push_back(batDau);
+            khoangMoi.push_back(ketThuc);
+            ketQua.push_back(khoangMoi);
+        }
     }
-    return result;
+
+    return ketQua;
 }
+
+int main() {
+    vector<vector<int>> danhSachKhoang = {{1,3}, {2,6}, {8,10}, {15,18}};
+    vector<vector<int>> ketQua = gopCacKhoang(danhSachKhoang);
+
+    for (int i = 0; i < (int)ketQua.size(); i++) {
+        cout << "[" << ketQua[i][0] << ", " << ketQua[i][1] << "] ";
+    }
+    cout << endl;
+
+    return 0;
+}
+```
+```python
+def gop_cac_khoang(danh_sach_khoang):
+    danh_sach_da_sap_xep = sorted(danh_sach_khoang)
+
+    ket_qua = []
+
+    for khoang in danh_sach_da_sap_xep:
+        bat_dau = khoang[0]
+        ket_thuc = khoang[1]
+
+        if len(ket_qua) > 0 and bat_dau <= ket_qua[-1][1]:
+            if ket_thuc > ket_qua[-1][1]:
+                ket_qua[-1][1] = ket_thuc
+        else:
+            ket_qua.append([bat_dau, ket_thuc])
+
+    return ket_qua
+
+
+danh_sach_khoang = [[1, 3], [2, 6], [8, 10], [15, 18]]
+print(gop_cac_khoang(danh_sach_khoang))
 ```
 </details>
 
@@ -544,169 +1342,468 @@ vector<vector<int>> merge(vector<vector<int>> &intervals) {
 <summary>Lời giải Bài 3 — Custom Sort String</summary>
 
 ```cpp
-string customSortString(string order, string s) {
-    unordered_map<char,int> priority;
-    for (int i = 0; i < (int)order.size(); i++) priority[order[i]] = i;
-    sort(s.begin(), s.end(), [&](char a, char b) {
-        return priority.count(a) ? (priority.count(b) ? priority[a] < priority[b] : true)
-                                   : (priority.count(b) ? false : false); // ký tự lạ giữ nguyên tương đối
-    });
-    return s;
+#include <bits/stdc++.h>
+using namespace std;
+
+string sapXepTheoThuTu(string order, string s) {
+    map<char, int> thuTuUuTien;
+    for (int i = 0; i < (int)order.size(); i++) {
+        thuTuUuTien[order[i]] = i;
+    }
+
+    vector<pair<int, char>> danhSachCoKhoa;
+    for (int i = 0; i < (int)s.size(); i++) {
+        char kyTu = s[i];
+        int khoa;
+        if (thuTuUuTien.count(kyTu) > 0) {
+            khoa = thuTuUuTien[kyTu];
+        } else {
+            // Ký tự không có trong order thì đẩy về cuối
+            khoa = 1000 + (int)kyTu;
+        }
+        danhSachCoKhoa.push_back(make_pair(khoa, kyTu));
+    }
+
+    stable_sort(danhSachCoKhoa.begin(), danhSachCoKhoa.end());
+
+    string ketQua = "";
+    for (int i = 0; i < (int)danhSachCoKhoa.size(); i++) {
+        ketQua = ketQua + danhSachCoKhoa[i].second;
+    }
+
+    return ketQua;
 }
+
+int main() {
+    string order = "cba";
+    string s = "abcd";
+    cout << sapXepTheoThuTu(order, s) << endl;
+    return 0;
+}
+```
+```python
+def sap_xep_theo_thu_tu(order, s):
+    thu_tu_uu_tien = {}
+    for i in range(len(order)):
+        thu_tu_uu_tien[order[i]] = i
+
+    def lay_khoa(ky_tu):
+        if ky_tu in thu_tu_uu_tien:
+            return thu_tu_uu_tien[ky_tu]
+        else:
+            return len(order)  # ký tự lạ đẩy về cuối
+
+    danh_sach_ky_tu = list(s)
+    danh_sach_ky_tu.sort(key=lay_khoa)
+
+    return "".join(danh_sach_ky_tu)
+
+
+order = "cba"
+s = "abcd"
+print(sap_xep_theo_thu_tu(order, s))
 ```
 </details>
 
 <details>
 <summary>Lời giải Bài 4 — Binary Search</summary>
 
-```cpp
-int search(vector<int> &nums, int target) {
-    int lo = 0, hi = nums.size() - 1;
-    while (lo <= hi) {
-        int mid = lo + (hi - lo) / 2;
-        if (nums[mid] == target) return mid;
-        else if (nums[mid] < target) lo = mid + 1;
-        else hi = mid - 1;
-    }
-    return -1;
-}
-```
+Giống hệt hàm `timKiemNhiPhan`/`tim_kiem_nhi_phan` đã trình bày ở mục 4.2.
 </details>
 
 <details>
 <summary>Lời giải Bài 5 — Find First and Last Position</summary>
 
-Dùng `lower_bound`/`upper_bound` như Ví dụ 1, mục 4.2.
-```cpp
-vector<int> searchRange(vector<int> &nums, int target) {
-    int first = lower_bound(nums.begin(), nums.end(), target) - nums.begin();
-    if (first == (int)nums.size() || nums[first] != target) return {-1, -1};
-    int last = upper_bound(nums.begin(), nums.end(), target) - nums.begin() - 1;
-    return {first, last};
-}
-```
+Giống hệt hàm `timViTriDauVaCuoi`/`tim_vi_tri_dau_va_cuoi` ở Ví dụ 1, mục 4.2.
 </details>
 
 <details>
 <summary>Lời giải Bài 6 — Search in Rotated Sorted Array</summary>
 
-Giống hệt Ví dụ 2, mục 4.2 (`searchRotated`).
+Giống hệt hàm `timKiemTrenMangBiXoay`/`tim_kiem_tren_mang_bi_xoay` ở Ví dụ 2, mục 4.2.
 </details>
 
 <details>
 <summary>Lời giải Bài 7 — Factory Machines</summary>
 
-Binary search on answer trên thời gian T: `check(T)` = tổng số sản phẩm làm được trong T phút của tất cả máy (`sum(T / t[i])`) có ≥ k không.
 ```cpp
-bool check(vector<long long> &t, long long T, long long k) {
-    long long total = 0;
-    for (long long ti : t) total += T / ti;
-    return total >= k;
-}
-long long minTime(vector<long long> &t, long long k) {
-    long long lo = 1, hi = (long long)2e18, ans = hi;
-    while (lo <= hi) {
-        long long mid = lo + (hi - lo) / 2;
-        if (check(t, mid, k)) { ans = mid; hi = mid - 1; }
-        else lo = mid + 1;
+#include <bits/stdc++.h>
+using namespace std;
+
+bool kiemTraDuSanPham(vector<long long> thoiGianMoiMay, long long tongThoiGian, long long soSanPhamCan) {
+    long long tongSanPhamLamDuoc = 0;
+
+    for (int i = 0; i < (int)thoiGianMoiMay.size(); i++) {
+        long long soSanPhamCuaMayNay = tongThoiGian / thoiGianMoiMay[i];
+        tongSanPhamLamDuoc = tongSanPhamLamDuoc + soSanPhamCuaMayNay;
     }
-    return ans;
+
+    return tongSanPhamLamDuoc >= soSanPhamCan;
 }
+
+long long timThoiGianNhoNhat(vector<long long> thoiGianMoiMay, long long soSanPhamCan) {
+    long long canDuoi = 1;
+    long long canTren = (long long)2e18;
+    long long ketQua = canTren;
+
+    while (canDuoi <= canTren) {
+        long long giuaKhoang = canDuoi + (canTren - canDuoi) / 2;
+
+        if (kiemTraDuSanPham(thoiGianMoiMay, giuaKhoang, soSanPhamCan) == true) {
+            ketQua = giuaKhoang;
+            canTren = giuaKhoang - 1;
+        } else {
+            canDuoi = giuaKhoang + 1;
+        }
+    }
+
+    return ketQua;
+}
+
+int main() {
+    vector<long long> thoiGianMoiMay = {2, 3, 7};
+    long long soSanPhamCan = 10;
+    cout << timThoiGianNhoNhat(thoiGianMoiMay, soSanPhamCan) << endl;
+    return 0;
+}
+```
+```python
+def kiem_tra_du_san_pham(thoi_gian_moi_may, tong_thoi_gian, so_san_pham_can):
+    tong_san_pham_lam_duoc = 0
+
+    for thoi_gian in thoi_gian_moi_may:
+        so_san_pham_cua_may_nay = tong_thoi_gian // thoi_gian
+        tong_san_pham_lam_duoc = tong_san_pham_lam_duoc + so_san_pham_cua_may_nay
+
+    return tong_san_pham_lam_duoc >= so_san_pham_can
+
+
+def tim_thoi_gian_nho_nhat(thoi_gian_moi_may, so_san_pham_can):
+    can_duoi = 1
+    can_tren = int(2e18)
+    ket_qua = can_tren
+
+    while can_duoi <= can_tren:
+        giua_khoang = can_duoi + (can_tren - can_duoi) // 2
+
+        if kiem_tra_du_san_pham(thoi_gian_moi_may, giua_khoang, so_san_pham_can) == True:
+            ket_qua = giua_khoang
+            can_tren = giua_khoang - 1
+        else:
+            can_duoi = giua_khoang + 1
+
+    return ket_qua
+
+
+thoi_gian_moi_may = [2, 3, 7]
+so_san_pham_can = 10
+print(tim_thoi_gian_nho_nhat(thoi_gian_moi_may, so_san_pham_can))
 ```
 </details>
 
 <details>
 <summary>Lời giải Bài 8 — Array Division</summary>
 
-Giống hệt Ví dụ 2, mục 4.3 (`minLargestSum`), chỉ đổi tên biến `pages` thành mảng đề cho, `k` giữ nguyên ý nghĩa số đoạn.
+Giống hệt hàm `timSoTrangLonNhatNhoNhat`/`tim_so_trang_lon_nhat_nho_nhat` ở Ví dụ 2, mục 4.3, chỉ thay tên biến số trang bằng mảng đề cho.
 </details>
 
 <details>
 <summary>Lời giải Bài 9 — Aggressive Cows</summary>
 
-Đây là dạng "maximize the minimum" — vẫn dùng binary search on answer nhưng chiều tìm kiếm đảo ngược: nếu khoảng cách d khả thi (đặt được c con bò với khoảng cách tối thiểu d), thử d **lớn hơn**; nếu không khả thi, thử d nhỏ hơn.
+Đây là bài toán "tối đa hoá giá trị nhỏ nhất", nên chiều thu hẹp khoảng tìm kiếm bị đảo ngược so với các bài trước: nếu khoảng cách đang thử là khả thi, ta thử một khoảng cách **lớn hơn**.
+
 ```cpp
-bool canPlace(vector<int> &pos, int cows, int minDist) {
-    int count = 1, last = pos[0];
-    for (int i = 1; i < (int)pos.size(); i++) {
-        if (pos[i] - last >= minDist) { count++; last = pos[i]; }
+#include <bits/stdc++.h>
+using namespace std;
+
+bool kiemTraDatDuocBo(vector<int> viTriChuong, int soConBo, int khoangCachToiThieu) {
+    int soConBoDaDat = 1;
+    int viTriConBoTruoc = viTriChuong[0];
+
+    for (int i = 1; i < (int)viTriChuong.size(); i++) {
+        if (viTriChuong[i] - viTriConBoTruoc >= khoangCachToiThieu) {
+            soConBoDaDat = soConBoDaDat + 1;
+            viTriConBoTruoc = viTriChuong[i];
+        }
     }
-    return count >= cows;
+
+    return soConBoDaDat >= soConBo;
 }
-int maxMinDistance(vector<int> pos, int cows) {
-    sort(pos.begin(), pos.end());
-    int lo = 0, hi = pos.back() - pos.front(), ans = 0;
-    while (lo <= hi) {
-        int mid = lo + (hi - lo) / 2;
-        if (canPlace(pos, cows, mid)) { ans = mid; lo = mid + 1; } // khả thi -> thử LỚN hơn
-        else hi = mid - 1;
+
+int timKhoangCachLonNhat(vector<int> viTriChuong, int soConBo) {
+    sort(viTriChuong.begin(), viTriChuong.end());
+
+    int canDuoi = 0;
+    int canTren = viTriChuong.back() - viTriChuong.front();
+    int ketQua = 0;
+
+    while (canDuoi <= canTren) {
+        int giuaKhoang = canDuoi + (canTren - canDuoi) / 2;
+
+        if (kiemTraDatDuocBo(viTriChuong, soConBo, giuaKhoang) == true) {
+            ketQua = giuaKhoang;
+            canDuoi = giuaKhoang + 1;
+        } else {
+            canTren = giuaKhoang - 1;
+        }
     }
-    return ans;
+
+    return ketQua;
 }
+
+int main() {
+    vector<int> viTriChuong = {1, 2, 4, 8, 9};
+    int soConBo = 3;
+    cout << timKhoangCachLonNhat(viTriChuong, soConBo) << endl;
+    return 0;
+}
+```
+```python
+def kiem_tra_dat_duoc_bo(vi_tri_chuong, so_con_bo, khoang_cach_toi_thieu):
+    so_con_bo_da_dat = 1
+    vi_tri_con_bo_truoc = vi_tri_chuong[0]
+
+    for i in range(1, len(vi_tri_chuong)):
+        if vi_tri_chuong[i] - vi_tri_con_bo_truoc >= khoang_cach_toi_thieu:
+            so_con_bo_da_dat = so_con_bo_da_dat + 1
+            vi_tri_con_bo_truoc = vi_tri_chuong[i]
+
+    return so_con_bo_da_dat >= so_con_bo
+
+
+def tim_khoang_cach_lon_nhat(vi_tri_chuong, so_con_bo):
+    vi_tri_chuong_da_sap_xep = sorted(vi_tri_chuong)
+
+    can_duoi = 0
+    can_tren = vi_tri_chuong_da_sap_xep[-1] - vi_tri_chuong_da_sap_xep[0]
+    ket_qua = 0
+
+    while can_duoi <= can_tren:
+        giua_khoang = can_duoi + (can_tren - can_duoi) // 2
+
+        if kiem_tra_dat_duoc_bo(vi_tri_chuong_da_sap_xep, so_con_bo, giua_khoang) == True:
+            ket_qua = giua_khoang
+            can_duoi = giua_khoang + 1
+        else:
+            can_tren = giua_khoang - 1
+
+    return ket_qua
+
+
+vi_tri_chuong = [1, 2, 4, 8, 9]
+so_con_bo = 3
+print(tim_khoang_cach_lon_nhat(vi_tri_chuong, so_con_bo))
 ```
 </details>
 
 <details>
 <summary>Lời giải Bài 10 — Median of Two Sorted Arrays</summary>
 
-Binary search trên mảng ngắn hơn để tìm điểm chia (partition) sao cho nửa trái gộp của cả 2 mảng có đúng số phần tử cần thiết và mọi phần tử nửa trái ≤ mọi phần tử nửa phải.
 ```cpp
-double findMedianSortedArrays(vector<int> &a, vector<int> &b) {
-    if (a.size() > b.size()) swap(a, b); // đảm bảo a là mảng ngắn hơn
-    int m = a.size(), n = b.size();
-    int lo = 0, hi = m;
-    while (lo <= hi) {
-        int i = lo + (hi - lo) / 2; // số phần tử lấy từ a cho nửa trái
-        int j = (m + n + 1) / 2 - i; // số phần tử lấy từ b cho nửa trái
+#include <bits/stdc++.h>
+using namespace std;
 
-        int aLeft = (i == 0) ? INT_MIN : a[i-1];
-        int aRight = (i == m) ? INT_MAX : a[i];
-        int bLeft = (j == 0) ? INT_MIN : b[j-1];
-        int bRight = (j == n) ? INT_MAX : b[j];
-
-        if (aLeft <= bRight && bLeft <= aRight) {
-            if ((m + n) % 2 == 0)
-                return (max(aLeft, bLeft) + min(aRight, bRight)) / 2.0;
-            else
-                return max(aLeft, bLeft);
-        } else if (aLeft > bRight) hi = i - 1;
-        else lo = i + 1;
+double timTrungVi(vector<int> a, vector<int> b) {
+    if (a.size() > b.size()) {
+        // Đảm bảo a luôn là mảng ngắn hơn để tìm kiếm nhị phân nhanh hơn
+        vector<int> tam = a;
+        a = b;
+        b = tam;
     }
-    return -1.0; // không xảy ra nếu input hợp lệ
+
+    int m = (int)a.size();
+    int n = (int)b.size();
+
+    int canDuoi = 0;
+    int canTren = m;
+
+    while (canDuoi <= canTren) {
+        int i = canDuoi + (canTren - canDuoi) / 2; // số phần tử lấy từ a cho nửa trái
+        int j = (m + n + 1) / 2 - i;                 // số phần tử lấy từ b cho nửa trái
+
+        int aTrai = (i == 0) ? INT_MIN : a[i - 1];
+        int aPhai = (i == m) ? INT_MAX : a[i];
+        int bTrai = (j == 0) ? INT_MIN : b[j - 1];
+        int bPhai = (j == n) ? INT_MAX : b[j];
+
+        if (aTrai <= bPhai && bTrai <= aPhai) {
+            if ((m + n) % 2 == 0) {
+                int lonNhatBenTrai = max(aTrai, bTrai);
+                int nhoNhatBenPhai = min(aPhai, bPhai);
+                return (lonNhatBenTrai + nhoNhatBenPhai) / 2.0;
+            } else {
+                return max(aTrai, bTrai);
+            }
+        } else if (aTrai > bPhai) {
+            canTren = i - 1;
+        } else {
+            canDuoi = i + 1;
+        }
+    }
+
+    return -1.0; // Không xảy ra nếu dữ liệu đầu vào hợp lệ
 }
+
+int main() {
+    vector<int> a = {1, 3};
+    vector<int> b = {2};
+    cout << fixed << setprecision(5) << timTrungVi(a, b) << endl;
+    return 0;
+}
+```
+```python
+def tim_trung_vi(a, b):
+    if len(a) > len(b):
+        a, b = b, a
+
+    m = len(a)
+    n = len(b)
+
+    can_duoi = 0
+    can_tren = m
+
+    while can_duoi <= can_tren:
+        i = can_duoi + (can_tren - can_duoi) // 2
+        j = (m + n + 1) // 2 - i
+
+        if i == 0:
+            a_trai = float('-inf')
+        else:
+            a_trai = a[i - 1]
+
+        if i == m:
+            a_phai = float('inf')
+        else:
+            a_phai = a[i]
+
+        if j == 0:
+            b_trai = float('-inf')
+        else:
+            b_trai = b[j - 1]
+
+        if j == n:
+            b_phai = float('inf')
+        else:
+            b_phai = b[j]
+
+        if a_trai <= b_phai and b_trai <= a_phai:
+            if (m + n) % 2 == 0:
+                lon_nhat_ben_trai = max(a_trai, b_trai)
+                nho_nhat_ben_phai = min(a_phai, b_phai)
+                return (lon_nhat_ben_trai + nho_nhat_ben_phai) / 2.0
+            else:
+                return max(a_trai, b_trai)
+        elif a_trai > b_phai:
+            can_tren = i - 1
+        else:
+            can_duoi = i + 1
+
+    return -1.0
+
+
+a = [1, 3]
+b = [2]
+print(round(tim_trung_vi(a, b), 5))
 ```
 </details>
 
 <details>
 <summary>Lời giải Bài 11 — Peak Index in a Mountain Array</summary>
 
-Giống hệt `findPeakElement` (Bài tập minh hoạ, mục 4.2), vì mảng dạng núi đảm bảo chỉ có đúng 1 đỉnh.
+Giống hệt hàm `timDinhNui`/`tim_dinh_nui` ở Bài tập minh hoạ, mục 4.2.
 </details>
 
 <details>
 <summary>Lời giải Bài 12 — Capacity To Ship Packages Within D Days</summary>
 
-Binary search on answer trên sức chứa C: `check(C)` = số ngày cần thiết để chở hết hàng với sức chứa C có ≤ D không.
 ```cpp
-bool canShip(vector<int> &weights, int cap, int days) {
-    int daysNeeded = 1; long long cur = 0;
-    for (int w : weights) {
-        if (cur + w > cap) { daysNeeded++; cur = 0; }
-        cur += w;
+#include <bits/stdc++.h>
+using namespace std;
+
+bool kiemTraChoDuTrongDNgay(vector<int> trongLuong, int sucChua, int soNgay) {
+    int soNgayCanDung = 1;
+    long long trongLuongHienTai = 0;
+
+    for (int i = 0; i < (int)trongLuong.size(); i++) {
+        if (trongLuongHienTai + trongLuong[i] > sucChua) {
+            soNgayCanDung = soNgayCanDung + 1;
+            trongLuongHienTai = 0;
+        }
+        trongLuongHienTai = trongLuongHienTai + trongLuong[i];
     }
-    return daysNeeded <= days;
+
+    return soNgayCanDung <= soNgay;
 }
-int shipWithinDays(vector<int> &weights, int days) {
-    int lo = *max_element(weights.begin(), weights.end());
-    int hi = accumulate(weights.begin(), weights.end(), 0);
-    int ans = hi;
-    while (lo <= hi) {
-        int mid = lo + (hi - lo) / 2;
-        if (canShip(weights, mid, days)) { ans = mid; hi = mid - 1; }
-        else lo = mid + 1;
+
+int timSucChuaNhoNhat(vector<int> trongLuong, int soNgay) {
+    int canDuoi = 0;
+    long long tongTatCa = 0;
+
+    for (int i = 0; i < (int)trongLuong.size(); i++) {
+        if (trongLuong[i] > canDuoi) {
+            canDuoi = trongLuong[i];
+        }
+        tongTatCa = tongTatCa + trongLuong[i];
     }
-    return ans;
+
+    int canTren = (int)tongTatCa;
+    int ketQua = canTren;
+
+    while (canDuoi <= canTren) {
+        int giuaKhoang = canDuoi + (canTren - canDuoi) / 2;
+
+        if (kiemTraChoDuTrongDNgay(trongLuong, giuaKhoang, soNgay) == true) {
+            ketQua = giuaKhoang;
+            canTren = giuaKhoang - 1;
+        } else {
+            canDuoi = giuaKhoang + 1;
+        }
+    }
+
+    return ketQua;
 }
+
+int main() {
+    vector<int> trongLuong = {1,2,3,4,5,6,7,8,9,10};
+    int soNgay = 5;
+    cout << timSucChuaNhoNhat(trongLuong, soNgay) << endl;
+    return 0;
+}
+```
+```python
+def kiem_tra_cho_du_trong_d_ngay(trong_luong, suc_chua, so_ngay):
+    so_ngay_can_dung = 1
+    trong_luong_hien_tai = 0
+
+    for tl in trong_luong:
+        if trong_luong_hien_tai + tl > suc_chua:
+            so_ngay_can_dung = so_ngay_can_dung + 1
+            trong_luong_hien_tai = 0
+        trong_luong_hien_tai = trong_luong_hien_tai + tl
+
+    return so_ngay_can_dung <= so_ngay
+
+
+def tim_suc_chua_nho_nhat(trong_luong, so_ngay):
+    can_duoi = max(trong_luong)
+    can_tren = sum(trong_luong)
+    ket_qua = can_tren
+
+    while can_duoi <= can_tren:
+        giua_khoang = can_duoi + (can_tren - can_duoi) // 2
+
+        if kiem_tra_cho_du_trong_d_ngay(trong_luong, giua_khoang, so_ngay) == True:
+            ket_qua = giua_khoang
+            can_tren = giua_khoang - 1
+        else:
+            can_duoi = giua_khoang + 1
+
+    return ket_qua
+
+
+trong_luong = [1,2,3,4,5,6,7,8,9,10]
+so_ngay = 5
+print(tim_suc_chua_nho_nhat(trong_luong, so_ngay))
 ```
 </details>
 
@@ -714,39 +1811,176 @@ int shipWithinDays(vector<int> &weights, int days) {
 <summary>Lời giải Bài 13 — Ternary Search hàm đơn mốt</summary>
 
 ```cpp
-double f(double x) {
-    return abs(x - 5) + abs(x - 10) + (x - 7) * (x - 7) / 100.0;
+#include <bits/stdc++.h>
+using namespace std;
+
+double tinhHamF(double x) {
+    double phanMotA = abs(x - 5.0);
+    double phanMotB = abs(x - 10.0);
+    double phanMotC = (x - 7.0) * (x - 7.0) / 100.0;
+    return phanMotA + phanMotB + phanMotC;
 }
-double findMin(double lo, double hi) {
-    for (int iter = 0; iter < 200; iter++) {
-        double m1 = lo + (hi - lo) / 3;
-        double m2 = hi - (hi - lo) / 3;
-        if (f(m1) > f(m2)) lo = m1; // đang tìm MIN nên đảo điều kiện so với ternarySearchMax
-        else hi = m2;
+
+double timGiaTriNhoNhatCuaF(double canDuoi, double canTren) {
+    int soLanLap = 0;
+    while (soLanLap < 200) {
+        double diem1 = canDuoi + (canTren - canDuoi) / 3.0;
+        double diem2 = canTren - (canTren - canDuoi) / 3.0;
+
+        if (tinhHamF(diem1) > tinhHamF(diem2)) {
+            canDuoi = diem1;
+        } else {
+            canTren = diem2;
+        }
+
+        soLanLap = soLanLap + 1;
     }
-    return (lo + hi) / 2;
+
+    return (canDuoi + canTren) / 2.0;
 }
+
+int main() {
+    double ketQua = timGiaTriNhoNhatCuaF(0.0, 20.0);
+    cout << fixed << setprecision(6) << ketQua << endl;
+    return 0;
+}
+```
+```python
+def tinh_ham_f(x):
+    phan_mot_a = abs(x - 5.0)
+    phan_mot_b = abs(x - 10.0)
+    phan_mot_c = (x - 7.0) * (x - 7.0) / 100.0
+    return phan_mot_a + phan_mot_b + phan_mot_c
+
+
+def tim_gia_tri_nho_nhat_cua_f(can_duoi, can_tren):
+    so_lan_lap = 0
+    while so_lan_lap < 200:
+        diem1 = can_duoi + (can_tren - can_duoi) / 3.0
+        diem2 = can_tren - (can_tren - can_duoi) / 3.0
+
+        if tinh_ham_f(diem1) > tinh_ham_f(diem2):
+            can_duoi = diem1
+        else:
+            can_tren = diem2
+
+        so_lan_lap = so_lan_lap + 1
+
+    return (can_duoi + can_tren) / 2.0
+
+
+ket_qua = tim_gia_tri_nho_nhat_cua_f(0.0, 20.0)
+print(round(ket_qua, 6))
 ```
 </details>
 
 <details>
 <summary>Lời giải Bài 14 — Koko Eating Bananas biến thể</summary>
 
-Ý tưởng: hàm `check(k)` cần mô phỏng lại logic ưu tiên 2 đống "ưa thích" trước — vẫn giữ nguyên khung binary search on answer, chỉ thay đổi cách tính `hours` bên trong `check`.
 ```cpp
-bool check(vector<int> &piles, int favA, int favB, int k, int h) {
-    long long hours = 0;
-    // Ưu tiên ăn 2 đống ưa thích trước
-    hours += (piles[favA] + k - 1) / k;
-    hours += (piles[favB] + k - 1) / k;
-    for (int i = 0; i < (int)piles.size(); i++) {
-        if (i == favA || i == favB) continue;
-        hours += (piles[i] + k - 1) / k;
+#include <bits/stdc++.h>
+using namespace std;
+
+bool kiemTraCoTheAnHetBienThe(vector<int> soChuoi, int viTriDongUaThich1, int viTriDongUaThich2, int tocDo, int soGio) {
+    long long tongSoGio = 0;
+
+    long long soGioDong1 = (soChuoi[viTriDongUaThich1] + tocDo - 1) / tocDo;
+    long long soGioDong2 = (soChuoi[viTriDongUaThich2] + tocDo - 1) / tocDo;
+    tongSoGio = tongSoGio + soGioDong1 + soGioDong2;
+
+    for (int i = 0; i < (int)soChuoi.size(); i++) {
+        if (i == viTriDongUaThich1 || i == viTriDongUaThich2) {
+            continue;
+        }
+        long long soGioDongNay = (soChuoi[i] + tocDo - 1) / tocDo;
+        tongSoGio = tongSoGio + soGioDongNay;
     }
-    return hours <= h;
+
+    return tongSoGio <= soGio;
 }
-// Phần khung binary search giữ nguyên như minEatingSpeed (Ví dụ 1, mục 4.3),
-// chỉ thay lời gọi canFinish() bằng check() phiên bản mới ở trên.
+
+int timTocDoNhoNhatBienThe(vector<int> soChuoi, int viTriDongUaThich1, int viTriDongUaThich2, int soGio) {
+    int canDuoi = 1;
+    int canTren = 0;
+    for (int i = 0; i < (int)soChuoi.size(); i++) {
+        if (soChuoi[i] > canTren) {
+            canTren = soChuoi[i];
+        }
+    }
+
+    int ketQua = canTren;
+
+    while (canDuoi <= canTren) {
+        int giuaKhoang = canDuoi + (canTren - canDuoi) / 2;
+
+        bool khaThi = kiemTraCoTheAnHetBienThe(soChuoi, viTriDongUaThich1, viTriDongUaThich2, giuaKhoang, soGio);
+
+        if (khaThi == true) {
+            ketQua = giuaKhoang;
+            canTren = giuaKhoang - 1;
+        } else {
+            canDuoi = giuaKhoang + 1;
+        }
+    }
+
+    return ketQua;
+}
+
+int main() {
+    vector<int> soChuoi = {5, 10, 15, 20};
+    int viTriUaThich1 = 0;
+    int viTriUaThich2 = 2;
+    int soGio = 6;
+
+    cout << timTocDoNhoNhatBienThe(soChuoi, viTriUaThich1, viTriUaThich2, soGio) << endl;
+
+    return 0;
+}
 ```
-> **Ghi chú:** đây là bài rèn tư duy — phần khó không nằm ở khung binary search (đã quen thuộc) mà ở việc thiết kế đúng hàm `check()` phản ánh đúng ràng buộc phức tạp hơn của đề bài.
+```python
+def kiem_tra_co_the_an_het_bien_the(so_chuoi, vi_tri_dong_ua_thich_1, vi_tri_dong_ua_thich_2, toc_do, so_gio):
+    tong_so_gio = 0
+
+    so_gio_dong_1 = (so_chuoi[vi_tri_dong_ua_thich_1] + toc_do - 1) // toc_do
+    so_gio_dong_2 = (so_chuoi[vi_tri_dong_ua_thich_2] + toc_do - 1) // toc_do
+    tong_so_gio = tong_so_gio + so_gio_dong_1 + so_gio_dong_2
+
+    for i in range(len(so_chuoi)):
+        if i == vi_tri_dong_ua_thich_1 or i == vi_tri_dong_ua_thich_2:
+            continue
+        so_gio_dong_nay = (so_chuoi[i] + toc_do - 1) // toc_do
+        tong_so_gio = tong_so_gio + so_gio_dong_nay
+
+    return tong_so_gio <= so_gio
+
+
+def tim_toc_do_nho_nhat_bien_the(so_chuoi, vi_tri_dong_ua_thich_1, vi_tri_dong_ua_thich_2, so_gio):
+    can_duoi = 1
+    can_tren = max(so_chuoi)
+    ket_qua = can_tren
+
+    while can_duoi <= can_tren:
+        giua_khoang = can_duoi + (can_tren - can_duoi) // 2
+
+        kha_thi = kiem_tra_co_the_an_het_bien_the(
+            so_chuoi, vi_tri_dong_ua_thich_1, vi_tri_dong_ua_thich_2, giua_khoang, so_gio
+        )
+
+        if kha_thi == True:
+            ket_qua = giua_khoang
+            can_tren = giua_khoang - 1
+        else:
+            can_duoi = giua_khoang + 1
+
+    return ket_qua
+
+
+so_chuoi = [5, 10, 15, 20]
+vi_tri_ua_thich_1 = 0
+vi_tri_ua_thich_2 = 2
+so_gio = 6
+
+print(tim_toc_do_nho_nhat_bien_the(so_chuoi, vi_tri_ua_thich_1, vi_tri_ua_thich_2, so_gio))
+```
+> **Ghi chú:** phần khó của bài này không nằm ở khung tìm kiếm nhị phân (đã quen thuộc từ các bài trước), mà nằm ở việc viết đúng hàm kiểm tra `check` để phản ánh chính xác ràng buộc phức tạp hơn của đề bài.
 </details>
