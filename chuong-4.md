@@ -7,7 +7,7 @@
 **Vấn đề:** Hàm `sort()` mặc định chỉ sắp xếp tăng dần theo phép so sánh `<` tự nhiên. Nhưng đề bài thường yêu cầu sắp xếp theo **nhiều tiêu chí** (ví dụ: điểm giảm dần, nếu bằng điểm thì tên tăng dần theo bảng chữ cái) hoặc theo tiêu chí **không tự nhiên**.
 
 ### Cách viết Comparator
-
+#### C++
 ```cpp
 #include <bits/stdc++.h>
 using namespace std;
@@ -43,6 +43,7 @@ int main() {
     return 0;
 }
 ```
+#### PYTHON
 ```python
 def lay_khoa_sap_xep(hoc_sinh):
     # hoc_sinh là 1 tuple (diem, ten)
@@ -66,6 +67,7 @@ for hoc_sinh in danh_sach_hoc_sinh:
 
 ### Ví dụ 1 (Dễ) — Sắp xếp giảm dần đơn giản
 
+#### C++
 ```cpp
 #include <bits/stdc++.h>
 using namespace std;
@@ -88,6 +90,7 @@ int main() {
     return 0;
 }
 ```
+#### PYTHON
 ```python
 danh_sach_so = [5, 2, 8, 1, 9]
 
@@ -102,6 +105,7 @@ print()
 
 Bài toán: sắp xếp các vật theo tỉ lệ giá trị/khối lượng giảm dần (sẽ dùng ở Chương 25 — Bài toán Fractional Knapsack). Nếu chia trực tiếp để so sánh, có thể gặp sai số dấu phẩy động. Cách an toàn hơn là **so sánh chéo bằng phép nhân** thay vì chia.
 
+#### C++
 ```cpp
 #include <bits/stdc++.h>
 using namespace std;
@@ -135,6 +139,8 @@ int main() {
     return 0;
 }
 ```
+
+#### PYTHON
 ```python
 from functools import cmp_to_key
 
@@ -173,6 +179,7 @@ Bài toán: cho danh sách các số (dạng chuỗi ký tự), ghép chúng l�
 
 **Phân tích:** Ta không thể so sánh 2 số này bằng giá trị số học bình thường. Ví dụ `"30"` lớn hơn `"3"` về mặt số học, nhưng nếu ghép `"3"` trước `"30"` ta được `"330"`, còn ghép `"30"` trước `"3"` ta được `"303"`. Vì `"330"` lớn hơn `"303"`, nên `"3"` phải đứng trước `"30"`. Vậy quy tắc so sánh đúng là: so sánh chuỗi `a + b` với chuỗi `b + a`.
 
+#### C++
 ```cpp
 #include <bits/stdc++.h>
 using namespace std;
@@ -212,6 +219,7 @@ int main() {
     return 0;
 }
 ```
+#### PYTHON
 ```python
 from functools import cmp_to_key
 
