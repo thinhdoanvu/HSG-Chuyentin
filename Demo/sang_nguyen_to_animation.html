@@ -1,5 +1,5 @@
 <div>
-<h2 class="sr-only">Minh họa từng bước thuật toán sàng nguyên tố Eratosthenes với các số từ 1 đến 30</h2>
+<h2 class="sr-only">Minh họa từng bước thuật toán sàng nguyên tố Eratosthenes, hiển thị rõ mảng đánh dấu 0/1</h2>
 
 <div style="display:flex; gap:8px; align-items:center; margin-bottom:1rem; flex-wrap:wrap;">
   <button id="btnPrev">⟵ Lùi</button>
@@ -9,6 +9,9 @@
   <span style="margin-left:auto; font-size:13px; color:var(--text-secondary);" id="stepCounter">Bước 0 / 0</span>
 </div>
 
+<div style="display:flex; gap:6px; margin-bottom:4px; font-size:11px; color:var(--text-muted);">
+  <span style="width:34px; text-align:center;">so</span>
+</div>
 <div id="grid" style="display:grid; grid-template-columns:repeat(10, 1fr); gap:6px; margin-bottom:1rem;"></div>
 
 <div style="background:var(--surface-1); border-radius:var(--radius); padding:12px 16px; min-height:56px; display:flex; align-items:center;">
@@ -20,32 +23,32 @@
 (function(){
   var R = 30;
   var marked = [];
-  for (var i = 0; i <= R; i++) { marked.push(false); }
-  marked[0] = true;
-  marked[1] = true;
+  for (var i = 0; i <= R; i++) { marked.push(0); }
+  marked[0] = 1;
+  marked[1] = 1;
 
   var steps = [];
-  steps.push({type:"init", marked: marked.slice(), i:null, target:null,
-    msg: "Khởi tạo: mọi số từ 2 đến 30 đều được coi là số nguyên tố (chưa bị đánh dấu)."});
+  steps.push({type:"init", marked: marked.slice(), i:null, target:null, changed:null,
+    msg: "Khởi tạo mảng marked[]: mọi ô từ 2 đến 30 đều mang giá trị 0 (nghĩa là chưa bị đánh dấu, coi như số nguyên tố)."});
 
   var m = marked.slice();
   var limit = Math.floor(Math.sqrt(R));
   for (var i2 = 2; i2 <= limit; i2++) {
-    if (m[i2]) {
-      steps.push({type:"skip", marked: m.slice(), i:i2, target:null,
-        msg: "i = " + i2 + " đã bị đánh dấu từ trước (là hợp số) → bỏ qua, không cần đánh dấu bội của nó nữa."});
+    if (m[i2] === 1) {
+      steps.push({type:"skip", marked: m.slice(), i:i2, target:null, changed:null,
+        msg: "marked[" + i2 + "] = 1 (đã bị đánh dấu từ trước) → bỏ qua, không cần đánh dấu bội của " + i2 + " nữa."});
       continue;
     }
-    steps.push({type:"prime", marked: m.slice(), i:i2, target:null,
-      msg: "i = " + i2 + " chưa bị đánh dấu → " + i2 + " là số nguyên tố. Bắt đầu đánh dấu các bội của " + i2 + ", tính từ " + (i2*i2) + " (= " + i2 + " × " + i2 + ") trở đi."});
+    steps.push({type:"prime", marked: m.slice(), i:i2, target:null, changed:null,
+      msg: "marked[" + i2 + "] = 0 → " + i2 + " là số nguyên tố. Bắt đầu gán marked[j] = 1 cho các bội j của " + i2 + ", tính từ j = " + (i2*i2) + " (= " + i2 + " × " + i2 + ") trở đi."});
     for (var j = i2*i2; j <= R; j += i2) {
-      m[j] = true;
-      steps.push({type:"mark", marked: m.slice(), i:i2, target:j,
-        msg: "Đánh dấu " + j + " = " + i2 + " × " + (j/i2) + " là hợp số (vì chia hết cho " + i2 + ")."});
+      m[j] = 1;
+      steps.push({type:"mark", marked: m.slice(), i:i2, target:j, changed:j,
+        msg: "Gán marked[" + j + "] = 1 (chuyển từ 0 sang 1), vì " + j + " = " + i2 + " × " + (j/i2) + " chia hết cho " + i2 + "."});
     }
   }
-  steps.push({type:"done", marked: m.slice(), i:null, target:null,
-    msg: "Xong! Các ô không bị đánh dấu chính là các số nguyên tố: 2, 3, 5, 7, 11, 13, 17, 19, 23, 29."});
+  steps.push({type:"done", marked: m.slice(), i:null, target:null, changed:null,
+    msg: "Xong! Những ô còn marked[so] = 0 chính là các số nguyên tố: 2, 3, 5, 7, 11, 13, 17, 19, 23, 29."});
 
   var cur = 0;
   var timer = null;
@@ -54,31 +57,51 @@
   var explain = document.getElementById("explain");
   var stepCounter = document.getElementById("stepCounter");
 
-  function cellColor(idx, s) {
-    if (idx < 2) return null;
-    if (s.type === "mark" && idx === s.target) return "c-amber";
-    if ((s.type === "prime" || s.type === "skip" || s.type === "mark") && idx === s.i) return "c-blue";
-    if (s.type === "done" && !s.marked[idx]) return "c-teal";
-    if (s.marked[idx]) return "c-gray";
-    return null;
-  }
-
   function render() {
     var s = steps[cur];
     grid.innerHTML = "";
     for (var idx = 1; idx <= R; idx++) {
-      var cls = cellColor(idx, s);
+      var val = s.marked[idx];
+      var isChanged = (s.changed === idx);
+      var isPointer = (s.i === idx) && (s.type === "prime" || s.type === "skip" || s.type === "mark");
+      var isPrimeFinal = (s.type === "done" && val === 0);
+
+      var cls = "";
+      if (isChanged) { cls = "c-amber t"; }
+      else if (isPointer) { cls = "c-blue t"; }
+      else if (isPrimeFinal) { cls = "c-teal t"; }
+      else if (val === 1) { cls = "c-gray t"; }
+
       var wrap = document.createElement("div");
-      wrap.className = cls ? cls : "";
+      wrap.className = cls;
       wrap.style.border = "0.5px solid var(--border)";
       wrap.style.borderRadius = "8px";
-      wrap.style.padding = "10px 4px";
+      wrap.style.padding = "6px 4px";
       wrap.style.textAlign = "center";
-      wrap.style.fontSize = "15px";
-      wrap.style.fontWeight = "500";
-      if (!cls) { wrap.style.background = "var(--surface-1)"; wrap.style.color = "var(--text-primary)"; }
-      else { wrap.className = cls + " t"; }
-      wrap.textContent = idx;
+      if (cls === "") { wrap.style.background = "var(--surface-1)"; }
+
+      var numEl = document.createElement("div");
+      numEl.textContent = idx;
+      numEl.style.fontSize = "13px";
+      numEl.style.fontWeight = "500";
+      if (cls === "") { numEl.style.color = "var(--text-primary)"; }
+
+      var arrowEl = document.createElement("div");
+      arrowEl.style.fontSize = "10px";
+      arrowEl.style.margin = "1px 0";
+      arrowEl.textContent = "marked=";
+      if (cls === "") { arrowEl.style.color = "var(--text-muted)"; }
+      else { arrowEl.className = "ts"; }
+
+      var valEl = document.createElement("div");
+      valEl.textContent = val;
+      valEl.style.fontSize = "15px";
+      valEl.style.fontWeight = "500";
+      if (cls === "") { valEl.style.color = "var(--text-secondary)"; }
+
+      wrap.appendChild(numEl);
+      wrap.appendChild(arrowEl);
+      wrap.appendChild(valEl);
       grid.appendChild(wrap);
     }
     explain.textContent = s.msg;
