@@ -240,7 +240,7 @@ Cho hai số $a, b$ ($10 \le a \le b \le 30000$). Đếm số lượng số thâ
 
 | Dữ liệu | Kết quả |
 |---|---|
-| `20 3011` | `3` |
+| `20 30` | `3` |
 
 ⏱️ Time limit: 1s
 
