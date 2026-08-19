@@ -106,7 +106,6 @@ def solve():
 
     # Buoc 1: khoi tao mang tong uoc, ban dau moi so co uoc 1
     tong_uoc = [1] * (r + 1)
-    tong_uoc[0] = 0
 
     # Buoc 2: giong y tuong sang nguyen to, "gieo" anh huong cua i len moi boi cua i
     can_bac_hai = int(r ** 0.5)
