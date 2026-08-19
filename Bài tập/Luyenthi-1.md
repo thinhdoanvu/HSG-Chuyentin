@@ -67,6 +67,7 @@ Hãy đếm số lượng số phong phú trong đoạn $[L, R]$.
 
 **Ý tưởng chính:** thay vì kiểm tra từng số một cách độc lập (duyệt ước của từng số tốn $O(\sqrt{a})$, tổng $O(R\sqrt{R})$), ta áp dụng tư tưởng giống **sàng số nguyên tố**: với mỗi số $i$ từ 2 đến $\sqrt{R}$, cộng $i$ (và $j$ tương ứng) vào tổng-ước của mọi bội số $i \times j$. Cách này tính tổng ước của **toàn bộ** các số trong đoạn chỉ với độ phức tạp gần $O(R\log R)$.
 
+
 **C++**
 
 ```cpp
@@ -125,6 +126,37 @@ def solve():
     print(dem)
 
 solve()
+```
+
+```
+# Phiên bản học sinh:
+import math
+
+def solve(l,r):
+    f = [1]*(r+1)
+    print(f)
+    c = int(math.sqrt(r))
+    print(c)
+    
+    for i in range(2,c+1,1):
+        for j in range(i, r//i + 1, 1):
+            if i==j:
+                f[i*j] += i 
+            else:
+                f[i*j] += i+j 
+    print(f)
+    
+    # dem xem co bao nhieu so phong phu
+    dem=0
+    for i in range(r):
+        if f[i] > i:
+            dem+=1
+    print(dem)
+    
+if __name__=="__main__":
+    l,r = map(int, input().split())
+    # print(l,r)
+    solve(l,r)
 ```
 
 **Bài học:** đây là ví dụ điển hình của việc chuyển từ "kiểm tra từng phần tử độc lập" sang "gieo ảnh hưởng của từng ước lên tất cả bội của nó" — cùng tư tưởng với sàng Eratosthenes.
@@ -217,6 +249,30 @@ def solve():
     print("\n".join(ket_qua))
 
 solve()
+```
+```
+# Phiên bản học sinh
+import math
+
+def sangnt(l,r):
+    f = [1]*(r+1)
+    # print(f)
+    f[0] = f[1] = 0
+    for i in range(2,int(math.sqrt(r))+1):
+        for j in range(i, r//i + 1):
+            f[i*j] = 0
+            
+    # dem so luong so nguyen to trong khoang l,try:
+    dem = 0
+    for i in range(l,r+1):
+        if f[i]==1:
+            dem+=1
+    print(dem)
+    
+if __name__=="__main__":
+    l,r = map(int, input().split())
+    # print(l,r)
+    sangnt(l,r)
 ```
 
 **Bài học:** đây là minh hoạ chuẩn cho kỹ thuật **Sàng Eratosthenes** (thuộc Chương 17 "Số học cơ bản").
