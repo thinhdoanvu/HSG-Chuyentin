@@ -1,0 +1,184 @@
+<div>
+<h2 class="sr-only">Minh họa từng bước thuật toán DP kết hợp tìm kiếm nhị phân cho bài GIFT, với ví dụ N=5, K=2, mảng 4,5,6,4,8</h2>
+
+<div style="display:flex; gap:8px; align-items:center; margin-bottom:1rem; flex-wrap:wrap;">
+  <button id="btnPrev">⟵ Lùi</button>
+  <button id="btnNext">Tiến ⟶</button>
+  <button id="btnPlay">▶ Tự chạy</button>
+  <button id="btnReset">↺ Bắt đầu lại</button>
+  <span style="margin-left:auto; font-size:13px; color:var(--text-secondary);" id="stepCounter">Bước 0 / 0</span>
+</div>
+
+<p style="font-size:12px; color:var(--text-muted); margin:0 0 4px;">Mảng a[] (giá trị phần quà), K = 2</p>
+<div id="gridA" style="display:grid; grid-template-columns:repeat(5, 1fr); gap:6px; margin-bottom:1rem;"></div>
+
+<p style="font-size:12px; color:var(--text-muted); margin:0 0 4px;">Mảng tails[] (tails[len-1] = giá trị nhỏ nhất để đạt dãy dài len)</p>
+<div id="gridT" style="display:grid; grid-template-columns:repeat(6, 1fr); gap:6px; min-height:56px; margin-bottom:1rem;"></div>
+
+<div style="background:var(--surface-1); border-radius:var(--radius); padding:12px 16px; min-height:56px; display:flex; align-items:center;">
+  <p id="explain" style="margin:0; font-size:15px; line-height:1.6;">Nhấn "Tiến" để bắt đầu.</p>
+</div>
+</div>
+
+<script>
+(function(){
+  var a = [4, 5, 6, 4, 8];
+  var n = 5;
+  var k = 2;
+
+  var steps = [];
+  var tails = [];
+
+  for (var i = 0; i < n; i++) {
+    var ai = a[i];
+    steps.push({phase:"element", aIdx:i, tails: tails.slice(), lo:null, hi:null, mid:null, special:null, specialColor:null,
+      msg: "Xét phần quà thứ " + (i+1) + ", giá trị a[" + (i+1) + "] = " + ai + ". Tìm vị trí phù hợp trong tails[] bằng nhị phân."});
+
+    var lo = 0, hi = tails.length;
+    if (tails.length === 0) {
+      steps.push({phase:"bscheck", aIdx:i, tails: tails.slice(), lo:0, hi:0, mid:null, special:null, specialColor:null,
+        msg: "tails[] hiện đang rỗng → không có gì để so sánh, vị trí chèn là lo = 0."});
+    }
+    while (lo < hi) {
+      var mid = Math.floor((lo + hi) / 2);
+      var cond = (tails[mid] + k <= ai);
+      steps.push({phase:"bscheck", aIdx:i, tails: tails.slice(), lo:lo, hi:hi, mid:mid, special:null, specialColor:null,
+        msg: "Nhị phân: lo=" + lo + ", hi=" + hi + ", mid=" + mid + " → so sánh tails[" + mid + "]+K = " + tails[mid] + "+" + k + " = " + (tails[mid]+k) + (cond ? " ≤ " : " > ") + ai + " → " + (cond ? "vẫn nối dài được, chuyển lo=mid+1=" + (mid+1) : "không nối dài được, chuyển hi=mid=" + mid) + "."});
+      if (cond) { lo = mid + 1; } else { hi = mid; }
+    }
+
+    if (lo === tails.length) {
+      tails.push(ai);
+      steps.push({phase:"action", aIdx:i, tails: tails.slice(), lo:lo, hi:null, mid:null, special:lo, specialColor:"c-teal",
+        msg: "lo = " + lo + " = độ dài hiện tại của tails[] → nối dài thêm được! Thêm tails[" + lo + "] = " + ai + ". Độ dài dãy hiện tại là " + tails.length + "."});
+    } else if (ai < tails[lo]) {
+      var oldVal = tails[lo];
+      tails[lo] = ai;
+      steps.push({phase:"action", aIdx:i, tails: tails.slice(), lo:lo, hi:null, mid:null, special:lo, specialColor:"c-amber",
+        msg: "lo = " + lo + " nằm trong tails[] và a[" + (i+1) + "]=" + ai + " < tails[" + lo + "]=" + oldVal + " → cập nhật tails[" + lo + "] = " + ai + " (giá trị nhỏ hơn giúp dễ nối dài về sau hơn). Độ dài dãy chưa đổi, vẫn là " + tails.length + "."});
+    } else {
+      steps.push({phase:"action", aIdx:i, tails: tails.slice(), lo:lo, hi:null, mid:null, special:lo, specialColor:null,
+        msg: "lo = " + lo + " nằm trong tails[] nhưng a[" + (i+1) + "]=" + ai + " không nhỏ hơn tails[" + lo + "]=" + tails[lo] + " → không cần cập nhật gì cả. Độ dài dãy vẫn là " + tails.length + "."});
+    }
+  }
+
+  steps.push({phase:"done", aIdx:null, tails: tails.slice(), lo:null, hi:null, mid:null, special:null, specialColor:null,
+    msg: "Duyệt hết mảng A. Độ dài của tails[] chính là số lượng phần quà nhiều nhất có thể chọn: " + tails.length + "."});
+
+  var cur = 0;
+  var timer = null;
+
+  var gridA = document.getElementById("gridA");
+  var gridT = document.getElementById("gridT");
+  var explain = document.getElementById("explain");
+  var stepCounter = document.getElementById("stepCounter");
+
+  function renderA(s) {
+    gridA.innerHTML = "";
+    for (var idx = 0; idx < n; idx++) {
+      var cls = (s.aIdx === idx) ? "c-blue t" : "";
+      var wrap = document.createElement("div");
+      wrap.className = cls;
+      wrap.style.border = "0.5px solid var(--border)";
+      wrap.style.borderRadius = "8px";
+      wrap.style.padding = "8px 4px";
+      wrap.style.textAlign = "center";
+      if (cls === "") { wrap.style.background = "var(--surface-1)"; }
+
+      var lbl = document.createElement("div");
+      lbl.textContent = "a[" + (idx+1) + "]";
+      lbl.style.fontSize = "11px";
+      if (cls === "") { lbl.style.color = "var(--text-muted)"; } else { lbl.className = "ts"; }
+
+      var val = document.createElement("div");
+      val.textContent = a[idx];
+      val.style.fontSize = "16px";
+      val.style.fontWeight = "500";
+      if (cls === "") { val.style.color = "var(--text-primary)"; }
+
+      wrap.appendChild(lbl);
+      wrap.appendChild(val);
+      gridA.appendChild(wrap);
+    }
+  }
+
+  function renderT(s) {
+    gridT.innerHTML = "";
+    if (s.tails.length === 0) {
+      var empty = document.createElement("div");
+      empty.style.gridColumn = "1 / -1";
+      empty.style.color = "var(--text-muted)";
+      empty.style.fontSize = "13px";
+      empty.style.padding = "16px 4px";
+      empty.style.textAlign = "center";
+      empty.textContent = "(rỗng)";
+      gridT.appendChild(empty);
+      return;
+    }
+    for (var idx = 0; idx < s.tails.length; idx++) {
+      var cls = "";
+      if (s.mid === idx) { cls = "c-blue t"; }
+      else if (s.special === idx && s.specialColor) { cls = s.specialColor + " t"; }
+      else if (s.lo !== null && s.hi !== null && idx >= s.lo && idx < s.hi && s.phase === "bscheck") { cls = "c-gray t"; }
+
+      var wrap = document.createElement("div");
+      wrap.className = cls;
+      wrap.style.border = "0.5px solid var(--border)";
+      wrap.style.borderRadius = "8px";
+      wrap.style.padding = "8px 4px";
+      wrap.style.textAlign = "center";
+      if (cls === "") { wrap.style.background = "var(--surface-1)"; }
+
+      var lbl = document.createElement("div");
+      lbl.textContent = "tails[" + idx + "]";
+      lbl.style.fontSize = "11px";
+      if (cls === "") { lbl.style.color = "var(--text-muted)"; } else { lbl.className = "ts"; }
+
+      var val = document.createElement("div");
+      val.textContent = s.tails[idx];
+      val.style.fontSize = "16px";
+      val.style.fontWeight = "500";
+      if (cls === "") { val.style.color = "var(--text-primary)"; }
+
+      wrap.appendChild(lbl);
+      wrap.appendChild(val);
+      gridT.appendChild(wrap);
+    }
+  }
+
+  function render() {
+    var s = steps[cur];
+    renderA(s);
+    renderT(s);
+    explain.textContent = s.msg;
+    stepCounter.textContent = "Bước " + cur + " / " + (steps.length - 1);
+    document.getElementById("btnPrev").disabled = (cur === 0);
+    document.getElementById("btnNext").disabled = (cur === steps.length - 1);
+  }
+
+  document.getElementById("btnNext").onclick = function(){
+    if (cur < steps.length - 1) { cur++; render(); }
+  };
+  document.getElementById("btnPrev").onclick = function(){
+    if (cur > 0) { cur--; render(); }
+  };
+  document.getElementById("btnReset").onclick = function(){
+    cur = 0; render();
+    if (timer) { clearInterval(timer); timer = null; document.getElementById("btnPlay").textContent = "▶ Tự chạy"; }
+  };
+  document.getElementById("btnPlay").onclick = function(){
+    var btn = document.getElementById("btnPlay");
+    if (timer) {
+      clearInterval(timer); timer = null; btn.textContent = "▶ Tự chạy";
+    } else {
+      btn.textContent = "⏸ Dừng";
+      timer = setInterval(function(){
+        if (cur < steps.length - 1) { cur++; render(); }
+        else { clearInterval(timer); timer = null; btn.textContent = "▶ Tự chạy"; }
+      }, 1300);
+    }
+  };
+
+  render();
+})();
+</script>
