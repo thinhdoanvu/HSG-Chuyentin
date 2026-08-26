@@ -258,8 +258,8 @@ if __name__ == "__main__":
     print(giai(n, k, a))
 ```
 
-## Quy hoạch động đơn giản O(N²)
-## Ý tưởng:  
+**Quy hoạch động đơn giản O(N²)**
+**Ý tưởng:**  
 f[i] = độ dài dãy con dài nhất kết thúc đúng tại phần tử thứ i. Với mỗi i, ta nhìn lại tất cả các phần tử j < i phía trước, nếu a[i] >= a[j] + K thì i có thể nối tiếp sau j, tạo ra dãy dài f[j] + 1. Ta chọn j nào cho f[j] lớn nhất.  
 Nếu không có j nào thỏa mãn, thì f[i] = 1 (chính a[i] tự đứng một mình).  
 ```
