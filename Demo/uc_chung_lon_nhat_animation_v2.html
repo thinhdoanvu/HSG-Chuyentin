@@ -1,0 +1,193 @@
+<div>
+<h2 class="sr-only">Minh họa thuật toán tìm 2 số trong mảng có ước chung lớn nhất, có chỉ rõ 2 số cụ thể tìm được ở bước cuối</h2>
+
+<div style="display:flex; gap:8px; align-items:center; margin-bottom:1rem; flex-wrap:wrap;">
+  <button id="btnPrev">⟵ Lùi</button>
+  <button id="btnNext">Tiến ⟶</button>
+  <button id="btnPlay">▶ Tự chạy</button>
+  <button id="btnReset">↺ Bắt đầu lại</button>
+  <span style="margin-left:auto; font-size:13px; color:var(--text-secondary);" id="stepCounter">Bước 0 / 0</span>
+</div>
+
+<p style="font-size:12px; color:var(--text-muted); margin:0 0 4px;">Mảng A (đầu vào) — chỉ cần đúng 2 số để tính UCLN</p>
+<div id="gridA" style="display:grid; grid-template-columns:repeat(6, 1fr); gap:6px; margin-bottom:1rem;"></div>
+
+<p style="font-size:12px; color:var(--text-muted); margin:0 0 4px;">Mảng đếm ước d[1..12]</p>
+<div id="gridD" style="display:grid; grid-template-columns:repeat(6, 1fr); gap:6px; margin-bottom:1rem;"></div>
+
+<div style="background:var(--surface-1); border-radius:var(--radius); padding:12px 16px; min-height:56px; display:flex; align-items:center;">
+  <p id="explain" style="margin:0; font-size:15px; line-height:1.6;">Nhấn "Tiến" để bắt đầu.</p>
+</div>
+</div>
+
+<script>
+(function(){
+  var a = [0, 12, 5, 6, 4, 7, 10];
+  var n = 6;
+  var maxx = 12;
+
+  var d0 = [];
+  for (var t = 0; t <= maxx; t++) { d0.push(0); }
+
+  var steps = [];
+  steps.push({phase:"init", d: d0.slice(), curA:null, curD:[], j:null, pairIdx:[],
+    msg: "Mảng A = [12, 5, 6, 4, 7, 10]. Mảng d[] đếm: d[j] = số phần tử trong A chia hết cho j. Ban đầu mọi d[j] = 0."});
+
+  var d = d0.slice();
+
+  function xuLyPhanTu(i, ai) {
+    var limit = Math.floor(Math.sqrt(ai));
+    for (var j = 1; j <= limit; j++) {
+      if (ai % j === 0) {
+        var partner = ai / j;
+        if (j === partner) {
+          d[j] += 1;
+          steps.push({phase:"count", d: d.slice(), curA:i, curD:[j], j:j, pairIdx:[],
+            msg: "Xét a[" + i + "] = " + ai + ", j = " + j + ": " + j + " × " + j + " = " + ai + " → chỉ cộng d[" + j + "]++, d[" + j + "] = " + d[j] + "."});
+        } else {
+          d[j] += 1;
+          d[partner] += 1;
+          steps.push({phase:"count", d: d.slice(), curA:i, curD:[j, partner], j:j, pairIdx:[],
+            msg: "Xét a[" + i + "] = " + ai + ", j = " + j + ": " + ai + " ÷ " + j + " = " + partner + " → cộng d[" + j + "]++ và d[" + partner + "]++. d[" + j + "] = " + d[j] + ", d[" + partner + "] = " + d[partner] + "."});
+        }
+      }
+    }
+  }
+
+  for (var i = 1; i <= n; i++) {
+    xuLyPhanTu(i, a[i]);
+  }
+
+  steps.push({phase:"transition", d: d.slice(), curA:null, curD:[], j:null, pairIdx:[],
+    msg: "Đã đếm ước xong cho toàn bộ mảng A. Bây giờ duyệt d[] từ j = " + maxx + " giảm dần về 1, tìm j đầu tiên có d[j] > 1."});
+
+  var found = null;
+  for (var j2 = maxx; j2 >= 1; j2--) {
+    if (d[j2] > 1) {
+      var lienQuan = [];
+      for (var k = 1; k <= n; k++) {
+        if (a[k] % j2 === 0) { lienQuan.push(k); }
+        if (lienQuan.length === 2) { break; }
+      }
+      steps.push({phase:"found", d: d.slice(), curA:null, curD:[j2], j:j2, pairIdx: lienQuan,
+        msg: "j = " + j2 + ": d[" + j2 + "] = " + d[j2] + " > 1 → UCLN lớn nhất là " + j2 + ". Cụ thể, 2 số a[" + lienQuan[0] + "]=" + a[lienQuan[0]] + " và a[" + lienQuan[1] + "]=" + a[lienQuan[1]] + " cùng chia hết cho " + j2 + " → UCLN(" + a[lienQuan[0]] + ", " + a[lienQuan[1]] + ") = " + j2 + "."});
+      found = j2;
+      break;
+    } else {
+      steps.push({phase:"scan", d: d.slice(), curA:null, curD:[j2], j:j2, pairIdx:[],
+        msg: "j = " + j2 + ": d[" + j2 + "] = " + d[j2] + " (chưa đủ 2 phần tử) → tiếp tục giảm j."});
+    }
+  }
+
+  var cur = 0;
+  var timer = null;
+
+  var gridA = document.getElementById("gridA");
+  var gridD = document.getElementById("gridD");
+  var explain = document.getElementById("explain");
+  var stepCounter = document.getElementById("stepCounter");
+
+  function renderA(s) {
+    gridA.innerHTML = "";
+    for (var idx = 1; idx <= n; idx++) {
+      var cls = "";
+      if (s.curA === idx) { cls = "c-blue t"; }
+      else if (s.pairIdx.indexOf(idx) !== -1) { cls = "c-teal t"; }
+
+      var wrap = document.createElement("div");
+      wrap.className = cls;
+      wrap.style.border = "0.5px solid var(--border)";
+      wrap.style.borderRadius = "8px";
+      wrap.style.padding = "8px 4px";
+      wrap.style.textAlign = "center";
+      if (cls === "") { wrap.style.background = "var(--surface-1)"; }
+
+      var lbl = document.createElement("div");
+      lbl.textContent = "a[" + idx + "]";
+      lbl.style.fontSize = "11px";
+      if (cls === "") { lbl.style.color = "var(--text-muted)"; } else { lbl.className = "ts"; }
+
+      var val = document.createElement("div");
+      val.textContent = a[idx];
+      val.style.fontSize = "16px";
+      val.style.fontWeight = "500";
+      if (cls === "") { val.style.color = "var(--text-primary)"; }
+
+      wrap.appendChild(lbl);
+      wrap.appendChild(val);
+      gridA.appendChild(wrap);
+    }
+  }
+
+  function renderD(s) {
+    gridD.innerHTML = "";
+    for (var j3 = 1; j3 <= maxx; j3++) {
+      var cls = "";
+      if (s.curD.indexOf(j3) !== -1) {
+        if (s.phase === "found") { cls = "c-teal t"; }
+        else { cls = "c-amber t"; }
+      } else if (s.j === j3 && s.phase === "scan") {
+        cls = "c-blue t";
+      }
+
+      var wrap = document.createElement("div");
+      wrap.className = cls;
+      wrap.style.border = "0.5px solid var(--border)";
+      wrap.style.borderRadius = "8px";
+      wrap.style.padding = "6px 4px";
+      wrap.style.textAlign = "center";
+      if (cls === "") { wrap.style.background = "var(--surface-1)"; }
+
+      var lbl = document.createElement("div");
+      lbl.textContent = "d[" + j3 + "]";
+      lbl.style.fontSize = "11px";
+      if (cls === "") { lbl.style.color = "var(--text-muted)"; } else { lbl.className = "ts"; }
+
+      var val = document.createElement("div");
+      val.textContent = s.d[j3];
+      val.style.fontSize = "16px";
+      val.style.fontWeight = "500";
+      if (cls === "") { val.style.color = "var(--text-primary)"; }
+
+      wrap.appendChild(lbl);
+      wrap.appendChild(val);
+      gridD.appendChild(wrap);
+    }
+  }
+
+  function render() {
+    var s = steps[cur];
+    renderA(s);
+    renderD(s);
+    explain.textContent = s.msg;
+    stepCounter.textContent = "Bước " + cur + " / " + (steps.length - 1);
+    document.getElementById("btnPrev").disabled = (cur === 0);
+    document.getElementById("btnNext").disabled = (cur === steps.length - 1);
+  }
+
+  document.getElementById("btnNext").onclick = function(){
+    if (cur < steps.length - 1) { cur++; render(); }
+  };
+  document.getElementById("btnPrev").onclick = function(){
+    if (cur > 0) { cur--; render(); }
+  };
+  document.getElementById("btnReset").onclick = function(){
+    cur = 0; render();
+    if (timer) { clearInterval(timer); timer = null; document.getElementById("btnPlay").textContent = "▶ Tự chạy"; }
+  };
+  document.getElementById("btnPlay").onclick = function(){
+    var btn = document.getElementById("btnPlay");
+    if (timer) {
+      clearInterval(timer); timer = null; btn.textContent = "▶ Tự chạy";
+    } else {
+      btn.textContent = "⏸ Dừng";
+      timer = setInterval(function(){
+        if (cur < steps.length - 1) { cur++; render(); }
+        else { clearInterval(timer); timer = null; btn.textContent = "▶ Tự chạy"; }
+      }, 1000);
+    }
+  };
+
+  render();
+})();
+</script>
