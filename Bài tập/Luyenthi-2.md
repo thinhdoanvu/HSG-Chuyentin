@@ -258,6 +258,92 @@ if __name__ == "__main__":
     print(giai(n, k, a))
 ```
 
+** Quy hoạch động đơn giản O(N²)**
+Ý tưởng:  
+f[i] = độ dài dãy con dài nhất kết thúc đúng tại phần tử thứ i. Với mỗi i, ta nhìn lại tất cả các phần tử j < i phía trước, nếu a[i] >= a[j] + K thì i có thể nối tiếp sau j, tạo ra dãy dài f[j] + 1. Ta chọn j nào cho f[j] lớn nhất.  
+Nếu không có j nào thỏa mãn, thì f[i] = 1 (chính a[i] tự đứng một mình).  
+```
+#include <bits/stdc++.h>
+using namespace std;
+
+int n, k;
+int a[10005];
+int f[10005];
+
+void nhap()
+{
+    cin >> n >> k;
+    for (int i = 1; i <= n; i++)
+    {
+        cin >> a[i];
+    }
+}
+
+void giai()
+{
+    for (int i = 1; i <= n; i++)
+    {
+        f[i] = 1;
+    }
+
+    for (int i = 1; i <= n; i++)
+    {
+        for (int j = 1; j < i; j++)
+        {
+            if (a[i] >= a[j] + k)
+            {
+                if (f[j] + 1 > f[i])
+                {
+                    f[i] = f[j] + 1;
+                }
+            }
+        }
+    }
+
+    int res = 0;
+    for (int i = 1; i <= n; i++)
+    {
+        if (f[i] > res)
+        {
+            res = f[i];
+        }
+    }
+    cout << res;
+}
+
+int main()
+{
+    ios_base::sync_with_stdio(false);
+    cin.tie(0);
+    nhap();
+    giai();
+    return 0;
+}
+```
+```
+def giai(n, k, a):
+    f = [1] * (n + 1)
+
+    for i in range(1, n + 1):
+        for j in range(1, i):
+            if a[i] >= a[j] + k:
+                if f[j] + 1 > f[i]:
+                    f[i] = f[j] + 1
+
+    res = 0
+    for i in range(1, n + 1):
+        if f[i] > res:
+            res = f[i]
+
+    return res
+
+
+if __name__ == "__main__":
+    n, k = map(int, input().split())
+    a = [0] + [int(input()) for _ in range(n)]
+    print(giai(n, k, a))
+```
+
 </details>
 
 <details>
