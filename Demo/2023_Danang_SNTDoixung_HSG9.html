@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bài 3 · Số nguyên tố đối xứng — HSG9 Đà Nẵng 2023</title>
+<style>
+  :root {
+    --bg: #10161d;
+    --surface: #1a232d;
+    --surface-2: #212c38;
+    --border: #2b3946;
+    --text: #e9eef3;
+    --text-muted: #8b98a6;
+    --text-faint: #5b6875;
+    --amber: #e8a552;
+    --blue: #5b9bf0;
+    --teal: #3fd7a8;
+    --red: #e2685f;
+    --gray: #3a4756;
+    --serif: Georgia, "Times New Roman", "Noto Serif", serif;
+    --mono: "SF Mono", "Cascadia Code", Consolas, "Roboto Mono", monospace;
+    --sans: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    line-height: 1.6;
+  }
+
+  .wrap {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+  }
+
+  header {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 24px;
+    margin-bottom: 32px;
+  }
+
+  .kicker {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--amber);
+    letter-spacing: 0.02em;
+    margin-bottom: 10px;
+  }
+
+  h1 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 32px;
+    margin: 0 0 10px;
+    line-height: 1.25;
+  }
+
+  .subtitle {
+    color: var(--text-muted);
+    font-size: 15px;
+    max-width: 62ch;
+  }
+
+  section { margin-bottom: 40px; }
+
+  h2 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 19px;
+    color: var(--text);
+    margin: 0 0 16px;
+  }
+
+  .statement {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 22px;
+    font-size: 14.5px;
+    color: var(--text-muted);
+  }
+
+  .statement strong { color: var(--text); font-weight: 600; }
+
+  .mirror-note {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--surface-2);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin-top: 16px;
+    font-family: var(--mono);
+    font-size: 15px;
+  }
+
+  .mirror-note .half { color: var(--blue); }
+  .mirror-note .glass { color: var(--text-faint); font-size: 18px; }
+  .mirror-note .refl { color: var(--teal); }
+  .mirror-note .cap { font-family: var(--sans); font-size: 13px; color: var(--text-muted); margin-left: 6px; }
+
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+
+  button {
+    font-family: var(--sans);
+    font-size: 14px;
+    background: var(--surface-2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 9px 16px;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+
+  button:hover:not(:disabled) { border-color: var(--amber); }
+  button:disabled { opacity: 0.35; cursor: default; }
+
+  .step-counter {
+    margin-left: auto;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--text-faint);
+  }
+
+  .stage {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px 24px;
+    margin-bottom: 16px;
+  }
+
+  .zone-label {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--text-faint);
+    letter-spacing: 0.04em;
+    margin-bottom: 10px;
+  }
+
+  .i-display {
+    text-align: center;
+    margin-bottom: 22px;
+  }
+
+  .i-display .label {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-faint);
+  }
+
+  .i-display .value {
+    font-family: var(--serif);
+    font-size: 40px;
+    color: var(--blue);
+    margin-top: 2px;
+  }
+
+  .candidates {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+
+  .cand-card {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    background: var(--surface-2);
+  }
+
+  .cand-card .cand-title {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--text-faint);
+    margin-bottom: 8px;
+  }
+
+  .cand-card .construct {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    word-break: break-all;
+  }
+
+  .cand-card .cand-value {
+    font-family: var(--mono);
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+
+  .cand-card .cand-status {
+    font-size: 12.5px;
+    font-family: var(--mono);
+  }
+
+  .cand-card.status-count { border-color: var(--teal); }
+  .cand-card.status-count .cand-value { color: var(--teal); }
+  .cand-card.status-count .cand-status { color: var(--teal); }
+
+  .cand-card.status-composite .cand-value { color: var(--text-muted); }
+  .cand-card.status-composite .cand-status { color: var(--red); }
+
+  .cand-card.status-skip .cand-value { color: var(--text-faint); }
+  .cand-card.status-skip .cand-status { color: var(--text-faint); }
+
+  .cand-card.status-stop { border-color: var(--red); }
+  .cand-card.status-stop .cand-value { color: var(--red); }
+  .cand-card.status-stop .cand-status { color: var(--red); font-weight: 600; }
+
+  .cand-card.inactive { opacity: 0.3; }
+
+  .result-list {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+    min-height: 40px;
+  }
+
+  .result-chip {
+    font-family: var(--mono);
+    font-size: 14px;
+    background: rgba(63, 215, 168, 0.12);
+    border: 1px solid var(--teal);
+    color: var(--teal);
+    border-radius: 6px;
+    padding: 5px 12px;
+  }
+
+  .result-count {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--text-faint);
+    margin-left: auto;
+  }
+
+  .explain {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    font-size: 14.5px;
+    color: var(--text);
+    min-height: 54px;
+    display: flex;
+    align-items: center;
+  }
+
+  .tabs { display: flex; gap: 2px; }
+
+  .tab {
+    font-family: var(--mono);
+    font-size: 13px;
+    padding: 8px 16px;
+    background: var(--surface);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    border-bottom: none;
+    border-radius: 8px 8px 0 0;
+    cursor: pointer;
+  }
+
+  .tab.active { color: var(--text); background: var(--surface-2); }
+
+  pre {
+    margin: 0;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 0 8px 8px 8px;
+    padding: 18px 20px;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.6;
+    color: #c9d4de;
+  }
+
+  pre.hidden { display: none; }
+
+  .kw { color: #e8a552; }
+  .fn { color: #5b9bf0; }
+  .cm { color: #5b6875; font-style: italic; }
+  .num { color: #3fd7a8; }
+  .str { color: #d6a4e8; }
+
+  footer {
+    border-top: 1px solid var(--border);
+    padding-top: 20px;
+    font-size: 12.5px;
+    color: var(--text-faint);
+  }
+
+  @media (max-width: 520px) {
+    .candidates { grid-template-columns: 1fr; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <header>
+    <div class="kicker">HSG9 · Đà Nẵng · 2022–2023 · Bài 3</div>
+    <h1>Số nguyên tố đối xứng</h1>
+    <p class="subtitle">Kỹ thuật cốt lõi: sinh trực tiếp số đối xứng từ nửa trái (không duyệt qua toàn bộ N), rồi kiểm tra nguyên tố.</p>
+  </header>
+
+  <section>
+    <h2>Đề bài</h2>
+    <div class="statement">
+      Một số được gọi là <strong>số nguyên tố đối xứng</strong> nếu nó vừa là số nguyên tố, vừa đọc xuôi đọc ngược giống nhau (ví dụ <strong>131</strong>).
+      Cho số nguyên dương N, đếm số lượng số nguyên tố đối xứng lớn hơn 10 và bé hơn N.
+      <br><br>
+      Ví dụ: N = 150 → đáp án = 3 (gồm 11, 101, 131).
+    </div>
+    <div class="mirror-note">
+      <span class="half">12</span>
+      <span class="glass">┃ (gương)</span>
+      <span class="refl">21</span>
+      <span class="cap">Chỉ cần biết nửa trái → suy ra toàn bộ số đối xứng</span>
+    </div>
+  </section>
+
+  <section>
+    <h2>Minh họa từng bước — ví dụ N = 150</h2>
+
+    <div class="controls">
+      <button id="btnPrev">⟵ Lùi</button>
+      <button id="btnNext">Tiến ⟶</button>
+      <button id="btnPlay">▶ Tự chạy</button>
+      <button id="btnReset">↺ Bắt đầu lại</button>
+      <span class="step-counter" id="stepCounter">Bước 0 / 0</span>
+    </div>
+
+    <div class="stage">
+      <div class="i-display">
+        <div class="label">nửa trái i =</div>
+        <div class="value" id="iValue">–</div>
+      </div>
+
+      <div class="zone-label">Hai số đối xứng ghép được từ i</div>
+      <div class="candidates">
+        <div class="cand-card inactive" id="cardOdd">
+          <div class="cand-title">DẠNG LẺ — NkN</div>
+          <div class="construct" id="oddConstruct">—</div>
+          <div class="cand-value" id="oddValue">—</div>
+          <div class="cand-status" id="oddStatus">—</div>
+        </div>
+        <div class="cand-card inactive" id="cardEven">
+          <div class="cand-title">DẠNG CHẴN — NkkN</div>
+          <div class="construct" id="evenConstruct">—</div>
+          <div class="cand-value" id="evenValue">—</div>
+          <div class="cand-status" id="evenStatus">—</div>
+        </div>
+      </div>
+
+      <div class="zone-label">Danh sách số nguyên tố đối xứng tìm được</div>
+      <div class="result-list" id="resultList">
+        <span class="result-count" id="resultCount">Đáp án = 0</span>
+      </div>
+    </div>
+
+    <div class="explain" id="explain">Nhấn "Tiến" để bắt đầu thử i = 1.</div>
+  </section>
+
+  <section>
+    <h2>Code tham khảo</h2>
+    <div class="tabs">
+      <div class="tab active" id="tabCpp">C++</div>
+      <div class="tab" id="tabPy">Python</div>
+    </div>
+    <pre id="codeCpp"><span class="kw">#include</span> &lt;bits/stdc++.h&gt;
+<span class="kw">using namespace</span> std;
+<span class="kw">#define</span> ll long long
+
+<span class="kw">bool</span> <span class="fn">ktnt</span>(ll a) { <span class="cm">// kiểm tra số nguyên tố</span>
+    <span class="kw">if</span> (a &lt; <span class="num">2</span>) <span class="kw">return</span> <span class="num">0</span>;
+    <span class="kw">if</span> (a == <span class="num">2</span> || a == <span class="num">3</span>) <span class="kw">return</span> <span class="num">1</span>;
+    <span class="kw">if</span> (a % <span class="num">2</span> == <span class="num">0</span> || a % <span class="num">3</span> == <span class="num">0</span>) <span class="kw">return</span> <span class="num">0</span>;
+    <span class="kw">for</span> (<span class="kw">int</span> j = <span class="num">5</span>; j &lt;= sqrt(a); j += <span class="num">6</span>) {
+        <span class="kw">if</span> (a % j == <span class="num">0</span> || a % (j + <span class="num">2</span>) == <span class="num">0</span>) <span class="kw">return</span> <span class="num">0</span>;
+    }
+    <span class="kw">return</span> <span class="num">1</span>;
+}
+
+ll <span class="fn">dx1</span>(ll x) { <span class="cm">// ghép dạng LẺ: NkN</span>
+    ll y = x / <span class="num">10</span>;
+    <span class="kw">while</span> (y &gt; <span class="num">0</span>) {
+        x = x * <span class="num">10</span> + (y % <span class="num">10</span>);
+        y = y / <span class="num">10</span>;
+    }
+    <span class="kw">return</span> x;
+}
+
+ll <span class="fn">dx2</span>(ll x) { <span class="cm">// ghép dạng CHẴN: NkkN</span>
+    ll y = x;
+    <span class="kw">while</span> (y &gt; <span class="num">0</span>) {
+        x = x * <span class="num">10</span> + (y % <span class="num">10</span>);
+        y = y / <span class="num">10</span>;
+    }
+    <span class="kw">return</span> x;
+}
+
+<span class="kw">int</span> <span class="fn">main</span>() {
+    ll n, res = <span class="num">0</span>;
+    cin &gt;&gt; n;
+    <span class="kw">for</span> (ll i = <span class="num">1</span>; i &lt; <span class="num">100000</span>; i++) {
+        ll k = <span class="fn">dx1</span>(i);
+        <span class="kw">if</span> (k &gt;= n) <span class="kw">break</span>;
+        <span class="kw">if</span> (k &gt; <span class="num">10</span> &amp;&amp; <span class="fn">ktnt</span>(k)) res++;
+        k = <span class="fn">dx2</span>(i);
+        <span class="kw">if</span> (k &lt; n &amp;&amp; <span class="fn">ktnt</span>(k)) res++;
+    }
+    cout &lt;&lt; res;
+}</pre>
+    <pre id="codePy" class="hidden"><span class="kw">import</span> math
+
+<span class="kw">def</span> <span class="fn">ktnt</span>(a):  <span class="cm"># kiểm tra số nguyên tố</span>
+    <span class="kw">if</span> a &lt; <span class="num">2</span>:
+        <span class="kw">return</span> <span class="kw">False</span>
+    <span class="kw">if</span> a <span class="kw">in</span> (<span class="num">2</span>, <span class="num">3</span>):
+        <span class="kw">return</span> <span class="kw">True</span>
+    <span class="kw">if</span> a % <span class="num">2</span> == <span class="num">0</span> <span class="kw">or</span> a % <span class="num">3</span> == <span class="num">0</span>:
+        <span class="kw">return</span> <span class="kw">False</span>
+    j = <span class="num">5</span>
+    <span class="kw">while</span> j * j &lt;= a:
+        <span class="kw">if</span> a % j == <span class="num">0</span> <span class="kw">or</span> a % (j + <span class="num">2</span>) == <span class="num">0</span>:
+            <span class="kw">return</span> <span class="kw">False</span>
+        j += <span class="num">6</span>
+    <span class="kw">return</span> <span class="kw">True</span>
+
+<span class="kw">def</span> <span class="fn">dx1</span>(x):  <span class="cm"># ghép dạng LẺ: NkN</span>
+    y = x // <span class="num">10</span>
+    <span class="kw">while</span> y &gt; <span class="num">0</span>:
+        x = x * <span class="num">10</span> + (y % <span class="num">10</span>)
+        y = y // <span class="num">10</span>
+    <span class="kw">return</span> x
+
+<span class="kw">def</span> <span class="fn">dx2</span>(x):  <span class="cm"># ghép dạng CHẴN: NkkN</span>
+    y = x
+    <span class="kw">while</span> y &gt; <span class="num">0</span>:
+        x = x * <span class="num">10</span> + (y % <span class="num">10</span>)
+        y = y // <span class="num">10</span>
+    <span class="kw">return</span> x
+
+<span class="kw">def</span> <span class="fn">giai</span>(n):
+    res = <span class="num">0</span>
+    i = <span class="num">1</span>
+    <span class="kw">while</span> i &lt; <span class="num">100000</span>:
+        k = <span class="fn">dx1</span>(i)
+        <span class="kw">if</span> k &gt;= n:
+            <span class="kw">break</span>
+        <span class="kw">if</span> k &gt; <span class="num">10</span> <span class="kw">and</span> <span class="fn">ktnt</span>(k):
+            res += <span class="num">1</span>
+        k = <span class="fn">dx2</span>(i)
+        <span class="kw">if</span> k &lt; n <span class="kw">and</span> <span class="fn">ktnt</span>(k):
+            res += <span class="num">1</span>
+        i += <span class="num">1</span>
+    <span class="kw">return</span> res
+
+<span class="kw">if</span> __name__ == <span class="str">"__main__"</span>:
+    n = <span class="fn">int</span>(<span class="fn">input</span>())
+    <span class="fn">print</span>(<span class="fn">giai</span>(n))</pre>
+  </section>
+
+  <footer>
+    Tài liệu HSG9 2022–2023 · Sở GD&amp;ĐT Đà Nẵng · Biên soạn lại phục vụ giảng dạy.
+  </footer>
+
+</div>
+
+<script>
+(function () {
+  var N = 150;
+
+  function isPrime(a) {
+    if (a < 2) return false;
+    if (a === 2 || a === 3) return true;
+    if (a % 2 === 0 || a % 3 === 0) return false;
+    for (var j = 5; j * j <= a; j += 6) {
+      if (a % j === 0 || a % (j + 2) === 0) return false;
+    }
+    return true;
+  }
+
+  function dx1(i) {
+    // dạng lẻ: ghép i với đảo ngược của i sau khi bỏ chữ số cuối
+    var s = String(i);
+    var half = s.slice(0, -1);
+    var rev = half.split("").reverse().join("");
+    return { value: parseInt(s + rev, 10), construct: s + " + " + (rev === "" ? "(rỗng)" : rev) };
+  }
+
+  function dx2(i) {
+    // dạng chẵn: ghép i với đảo ngược toàn bộ i
+    var s = String(i);
+    var rev = s.split("").reverse().join("");
+    return { value: parseInt(s + rev, 10), construct: s + " + " + rev };
+  }
+
+  var steps = [];
+  var foundList = [];
+
+  steps.push({
+    i: null, odd: null, even: null, msg: "Bắt đầu thử nửa trái i = 1, 2, 3, ... Với mỗi i, ghép ra 2 số đối xứng (dạng lẻ và dạng chẵn) rồi kiểm tra.",
+    found: foundList.slice()
+  });
+
+  var i = 1;
+  var stopped = false;
+  while (!stopped && i < 200) {
+    var oddC = dx1(i);
+    var oddStatus, oddClass;
+    if (oddC.value >= N) {
+      oddStatus = "≥ N=" + N + " → DỪNG vòng lặp";
+      oddClass = "status-stop";
+      steps.push({
+        i: i, odd: { value: oddC.value, construct: oddC.construct, status: oddStatus, cls: oddClass, active: true },
+        even: { value: null, construct: "—", status: "không xét nữa", cls: "status-skip", active: false },
+        msg: "i = " + i + ": dạng lẻ ghép được " + oddC.value + " ≥ N=" + N + " → dừng vòng lặp ngay, không cần thử i lớn hơn.",
+        found: foundList.slice()
+      });
+      stopped = true;
+      break;
+    } else if (oddC.value <= 10) {
+      oddStatus = "≤ 10, bỏ qua";
+      oddClass = "status-skip";
+    } else if (isPrime(oddC.value)) {
+      oddStatus = "nguyên tố → đếm!";
+      oddClass = "status-count";
+      foundList.push(oddC.value);
+    } else {
+      oddStatus = "hợp số";
+      oddClass = "status-composite";
+    }
+
+    var evenC = dx2(i);
+    var evenStatus, evenClass;
+    if (evenC.value >= N) {
+      evenStatus = "≥ N=" + N + ", bỏ qua";
+      evenClass = "status-skip";
+    } else if (isPrime(evenC.value)) {
+      evenStatus = "nguyên tố → đếm!";
+      evenClass = "status-count";
+      foundList.push(evenC.value);
+    } else {
+      evenStatus = "hợp số";
+      evenClass = "status-composite";
+    }
+
+    var msgParts = ["i = " + i + ": dạng lẻ = " + oddC.value + " (" + oddStatus + "); dạng chẵn = " + evenC.value + " (" + evenStatus + ")."];
+
+    steps.push({
+      i: i,
+      odd: { value: oddC.value, construct: oddC.construct, status: oddStatus, cls: oddClass, active: true },
+      even: { value: evenC.value, construct: evenC.construct, status: evenStatus, cls: evenClass, active: true },
+      msg: msgParts.join(" "),
+      found: foundList.slice()
+    });
+
+    i++;
+  }
+
+  steps.push({
+    i: null, odd: null, even: null,
+    msg: "Duyệt xong. Tổng cộng tìm được " + foundList.length + " số nguyên tố đối xứng nhỏ hơn N=" + N + ".",
+    found: foundList.slice(), done: true
+  });
+
+  var cur = 0;
+  var timer = null;
+
+  var iValueEl = document.getElementById("iValue");
+  var cardOdd = document.getElementById("cardOdd");
+  var cardEven = document.getElementById("cardEven");
+  var oddConstruct = document.getElementById("oddConstruct");
+  var oddValue = document.getElementById("oddValue");
+  var oddStatusEl = document.getElementById("oddStatus");
+  var evenConstruct = document.getElementById("evenConstruct");
+  var evenValue = document.getElementById("evenValue");
+  var evenStatusEl = document.getElementById("evenStatus");
+  var resultListEl = document.getElementById("resultList");
+  var resultCountEl = document.getElementById("resultCount");
+  var explainEl = document.getElementById("explain");
+  var stepCounterEl = document.getElementById("stepCounter");
+  var btnPrev = document.getElementById("btnPrev");
+  var btnNext = document.getElementById("btnNext");
+  var btnPlay = document.getElementById("btnPlay");
+  var btnReset = document.getElementById("btnReset");
+
+  function setCard(cardEl, constructEl, valueEl, statusEl, data) {
+    cardEl.className = "cand-card";
+    if (!data || !data.active) {
+      cardEl.classList.add("inactive");
+      constructEl.textContent = "—";
+      valueEl.textContent = "—";
+      statusEl.textContent = data ? data.status : "—";
+      return;
+    }
+    cardEl.classList.add(data.cls);
+    constructEl.textContent = data.construct;
+    valueEl.textContent = data.value;
+    statusEl.textContent = data.status;
+  }
+
+  function render() {
+    var s = steps[cur];
+    iValueEl.textContent = (s.i === null) ? "–" : s.i;
+
+    setCard(cardOdd, oddConstruct, oddValue, oddStatusEl, s.odd);
+    setCard(cardEven, evenConstruct, evenValue, evenStatusEl, s.even);
+
+    resultListEl.innerHTML = "";
+    for (var k = 0; k < s.found.length; k++) {
+      var chip = document.createElement("span");
+      chip.className = "result-chip";
+      chip.textContent = s.found[k];
+      resultListEl.appendChild(chip);
+    }
+    var countSpan = document.createElement("span");
+    countSpan.className = "result-count";
+    countSpan.id = "resultCount";
+    countSpan.textContent = "Đáp án = " + s.found.length;
+    resultListEl.appendChild(countSpan);
+
+    explainEl.textContent = s.msg;
+    stepCounterEl.textContent = "Bước " + cur + " / " + (steps.length - 1);
+    btnPrev.disabled = (cur === 0);
+    btnNext.disabled = (cur === steps.length - 1);
+  }
+
+  btnNext.onclick = function () {
+    if (cur < steps.length - 1) { cur++; render(); }
+  };
+  btnPrev.onclick = function () {
+    if (cur > 0) { cur--; render(); }
+  };
+  btnReset.onclick = function () {
+    cur = 0; render();
+    if (timer) { clearInterval(timer); timer = null; btnPlay.textContent = "▶ Tự chạy"; }
+  };
+  btnPlay.onclick = function () {
+    if (timer) {
+      clearInterval(timer); timer = null; btnPlay.textContent = "▶ Tự chạy";
+    } else {
+      btnPlay.textContent = "⏸ Dừng";
+      timer = setInterval(function () {
+        if (cur < steps.length - 1) { cur++; render(); }
+        else { clearInterval(timer); timer = null; btnPlay.textContent = "▶ Tự chạy"; }
+      }, 900);
+    }
+  };
+
+  var tabCpp = document.getElementById("tabCpp");
+  var tabPy = document.getElementById("tabPy");
+  var codeCpp = document.getElementById("codeCpp");
+  var codePy = document.getElementById("codePy");
+
+  tabCpp.onclick = function () {
+    tabCpp.classList.add("active");
+    tabPy.classList.remove("active");
+    codeCpp.classList.remove("hidden");
+    codePy.classList.add("hidden");
+  };
+  tabPy.onclick = function () {
+    tabPy.classList.add("active");
+    tabCpp.classList.remove("active");
+    codePy.classList.remove("hidden");
+    codeCpp.classList.add("hidden");
+  };
+
+  render();
+})();
+</script>
+
+</body>
+</html>
