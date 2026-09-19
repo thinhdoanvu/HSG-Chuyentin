@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bài 2 · Đếm ký tự — HSG9 Đà Nẵng 2023</title>
+<style>
+  :root {
+    --bg: #10161d;
+    --surface: #1a232d;
+    --surface-2: #212c38;
+    --border: #2b3946;
+    --text: #e9eef3;
+    --text-muted: #8b98a6;
+    --text-faint: #5b6875;
+    --amber: #e8a552;
+    --blue: #5b9bf0;
+    --teal: #3fd7a8;
+    --gray: #3a4756;
+    --serif: Georgia, "Times New Roman", "Noto Serif", serif;
+    --mono: "SF Mono", "Cascadia Code", Consolas, "Roboto Mono", monospace;
+    --sans: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    line-height: 1.6;
+  }
+
+  .wrap {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+  }
+
+  header {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 24px;
+    margin-bottom: 32px;
+  }
+
+  .kicker {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--amber);
+    letter-spacing: 0.02em;
+    margin-bottom: 10px;
+  }
+
+  h1 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 32px;
+    margin: 0 0 10px;
+    line-height: 1.25;
+  }
+
+  .subtitle {
+    color: var(--text-muted);
+    font-size: 15px;
+    max-width: 60ch;
+  }
+
+  section { margin-bottom: 40px; }
+
+  h2 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 19px;
+    color: var(--text);
+    margin: 0 0 16px;
+  }
+
+  .statement {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 22px;
+    font-size: 14.5px;
+    color: var(--text-muted);
+  }
+
+  .statement strong { color: var(--text); font-weight: 600; }
+
+  .formula {
+    font-family: var(--mono);
+    background: var(--surface-2);
+    border-radius: 6px;
+    padding: 2px 8px;
+    color: var(--teal);
+    font-size: 13.5px;
+  }
+
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+
+  button {
+    font-family: var(--sans);
+    font-size: 14px;
+    background: var(--surface-2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 9px 16px;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+
+  button:hover:not(:disabled) { border-color: var(--amber); }
+  button:disabled { opacity: 0.35; cursor: default; }
+
+  .step-counter {
+    margin-left: auto;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--text-faint);
+  }
+
+  .stage {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px 24px;
+    margin-bottom: 16px;
+  }
+
+  .zone-label {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--text-faint);
+    letter-spacing: 0.04em;
+    margin-bottom: 10px;
+  }
+
+  .string-row {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+    margin-bottom: 28px;
+  }
+
+  .ctile {
+    width: 34px;
+    height: 40px;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    background: var(--surface-2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono);
+    font-size: 16px;
+    color: var(--text-muted);
+    transition: transform 0.15s ease, border-color 0.15s ease;
+  }
+
+  .ctile.current {
+    border-color: var(--blue);
+    background: rgba(91, 155, 240, 0.14);
+    color: var(--blue);
+    transform: translateY(-3px);
+  }
+
+  .ctile.done { color: var(--text-faint); }
+
+  .freq-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    min-height: 70px;
+    margin-bottom: 20px;
+  }
+
+  .ftile {
+    min-width: 56px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 6px;
+    text-align: center;
+    background: var(--surface-2);
+    transition: border-color 0.15s ease, transform 0.15s ease;
+  }
+
+  .ftile .f-char {
+    font-family: var(--mono);
+    font-size: 15px;
+    color: var(--text);
+  }
+
+  .ftile .f-count {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  .ftile.bump {
+    border-color: var(--amber);
+    transform: translateY(-2px);
+  }
+  .ftile.bump .f-count { color: var(--amber); font-weight: 600; }
+
+  .ftile.qualify {
+    border-color: var(--teal);
+    background: rgba(63, 215, 168, 0.1);
+  }
+  .ftile.qualify .f-count { color: var(--teal); font-weight: 600; }
+
+  .result-line {
+    background: var(--surface-2);
+    border-radius: 8px;
+    padding: 14px 18px;
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 15px;
+    color: var(--text-muted);
+    min-height: 22px;
+  }
+
+  .result-line .hl { color: var(--teal); font-weight: 600; }
+
+  .explain {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    font-size: 14.5px;
+    color: var(--text);
+    min-height: 54px;
+    display: flex;
+    align-items: center;
+  }
+
+  .tabs { display: flex; gap: 2px; }
+
+  .tab {
+    font-family: var(--mono);
+    font-size: 13px;
+    padding: 8px 16px;
+    background: var(--surface);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    border-bottom: none;
+    border-radius: 8px 8px 0 0;
+    cursor: pointer;
+  }
+
+  .tab.active { color: var(--text); background: var(--surface-2); }
+
+  pre {
+    margin: 0;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 0 8px 8px 8px;
+    padding: 18px 20px;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.6;
+    color: #c9d4de;
+  }
+
+  pre.hidden { display: none; }
+
+  .kw { color: #e8a552; }
+  .fn { color: #5b9bf0; }
+  .cm { color: #5b6875; font-style: italic; }
+  .num { color: #3fd7a8; }
+  .str { color: #d6a4e8; }
+
+  footer {
+    border-top: 1px solid var(--border);
+    padding-top: 20px;
+    font-size: 12.5px;
+    color: var(--text-faint);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <header>
+    <div class="kicker">HSG9 · Đà Nẵng · 2022–2023 · Bài 2</div>
+    <h1>Đếm ký tự</h1>
+    <p class="subtitle">Kỹ thuật cốt lõi: mảng đếm tần suất — mỗi ký tự có một "ô" riêng để đếm số lần xuất hiện, phân biệt chữ hoa/thường.</p>
+  </header>
+
+  <section>
+    <h2>Đề bài</h2>
+    <div class="statement">
+      Nhập từ bàn phím một xâu ký tự <strong>s</strong>. Hãy đếm và in ra số lượng ký tự xuất hiện <strong>ít nhất 2 lần</strong> trong xâu s (có phân biệt chữ hoa và chữ thường). Xâu S có không quá 255 ký tự.
+      <br><br>
+      Cách làm: <span class="formula">d[c] = số lần ký tự c xuất hiện trong s</span>, sau đó đếm số ký tự c có <span class="formula">d[c] &gt; 1</span>.
+    </div>
+  </section>
+
+  <section>
+    <h2>Minh họa từng bước</h2>
+
+    <div class="controls">
+      <button id="btnPrev">⟵ Lùi</button>
+      <button id="btnNext">Tiến ⟶</button>
+      <button id="btnPlay">▶ Tự chạy</button>
+      <button id="btnReset">↺ Bắt đầu lại</button>
+      <span class="step-counter" id="stepCounter">Bước 0 / 0</span>
+    </div>
+
+    <div class="stage">
+      <div class="zone-label">Xâu s (đang duyệt từng ký tự)</div>
+      <div class="string-row" id="stringRow"></div>
+
+      <div class="zone-label">Mảng đếm d[c] (chỉ tạo ô khi gặp ký tự lần đầu)</div>
+      <div class="freq-row" id="freqRow"></div>
+
+      <div class="result-line" id="resultLine">Nhấn "Tiến" để bắt đầu duyệt xâu.</div>
+    </div>
+
+    <div class="explain" id="explain">Sẵn sàng. Ví dụ minh họa: s = "abcbMbdmccccd".</div>
+  </section>
+
+  <section>
+    <h2>Code tham khảo</h2>
+    <div class="tabs">
+      <div class="tab active" id="tabCpp">C++</div>
+      <div class="tab" id="tabPy">Python</div>
+    </div>
+    <pre id="codeCpp"><span class="kw">#include</span> &lt;bits/stdc++.h&gt;
+<span class="kw">using namespace</span> std;
+<span class="kw">#define</span> ll long long
+
+ll d[<span class="num">1000</span>], res;
+string s;
+
+<span class="kw">int</span> <span class="fn">main</span>()
+{
+    getline(cin, s);
+    <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; s.size(); i++)
+    {
+        d[s[i]]++;
+    }
+    <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt;= <span class="num">500</span>; i++)
+    {
+        <span class="kw">if</span> (d[i] &gt; <span class="num">1</span>)
+        {
+            res++;
+        }
+    }
+    cout &lt;&lt; res;
+}</pre>
+    <pre id="codePy" class="hidden"><span class="kw">def</span> <span class="fn">giai</span>(s):
+    d = {}
+    <span class="kw">for</span> ch <span class="kw">in</span> s:
+        d[ch] = d.get(ch, <span class="num">0</span>) + <span class="num">1</span>
+    res = <span class="num">0</span>
+    <span class="kw">for</span> ch <span class="kw">in</span> d:
+        <span class="kw">if</span> d[ch] &gt; <span class="num">1</span>:
+            res += <span class="num">1</span>
+    <span class="kw">return</span> res
+
+<span class="kw">if</span> __name__ == <span class="str">"__main__"</span>:
+    s = <span class="fn">input</span>()
+    <span class="fn">print</span>(<span class="fn">giai</span>(s))</pre>
+  </section>
+
+  <footer>
+    Tài liệu HSG9 2022–2023 · Sở GD&amp;ĐT Đà Nẵng · Biên soạn lại phục vụ giảng dạy.
+  </footer>
+
+</div>
+
+<script>
+(function () {
+  var s = "abcbMbdmccccd";
+
+  var steps = [];
+  var freq = {};       // ký tự -> số lần đếm được tính đến hiện tại
+  var order = [];       // thứ tự xuất hiện lần đầu của từng ký tự
+
+  steps.push({
+    idx: null,
+    freq: {},
+    order: [],
+    bumpChar: null,
+    msg: "Xâu s = \"" + s + "\" (dài " + s.length + " ký tự). Ta duyệt từng ký tự, tăng dần mảng đếm d[c].",
+    result: null,
+    qualifySet: null
+  });
+
+  for (var i = 0; i < s.length; i++) {
+    var ch = s[i];
+    var isNew = !(ch in freq);
+    if (isNew) {
+      freq[ch] = 0;
+      order.push(ch);
+    }
+    freq[ch] += 1;
+
+    var msg;
+    if (isNew) {
+      msg = "i=" + i + ": gặp ký tự '" + ch + "' lần đầu tiên → tạo ô d['" + ch + "'] và đặt bằng 1.";
+    } else {
+      msg = "i=" + i + ": gặp lại ký tự '" + ch + "' → tăng d['" + ch + "'] lên " + freq[ch] + ".";
+    }
+
+    steps.push({
+      idx: i,
+      freq: Object.assign({}, freq),
+      order: order.slice(),
+      bumpChar: ch,
+      msg: msg,
+      result: null,
+      qualifySet: null
+    });
+  }
+
+  var qualifyList = [];
+  var countQualify = 0;
+  for (var k = 0; k < order.length; k++) {
+    if (freq[order[k]] > 1) {
+      qualifyList.push(order[k]);
+      countQualify++;
+    }
+  }
+
+  steps.push({
+    idx: null,
+    freq: Object.assign({}, freq),
+    order: order.slice(),
+    bumpChar: null,
+    msg: "Duyệt xong xâu s. Quét mảng d[], đếm những ký tự có d[c] > 1: " + qualifyList.map(function (c) { return "'" + c + "' (d=" + freq[c] + ")"; }).join(", ") + " → tổng cộng " + countQualify + " ký tự.",
+    result: "Đáp án = " + countQualify,
+    qualifySet: qualifyList
+  });
+
+  var cur = 0;
+  var timer = null;
+
+  var stringRowEl = document.getElementById("stringRow");
+  var freqRowEl = document.getElementById("freqRow");
+  var resultLineEl = document.getElementById("resultLine");
+  var explainEl = document.getElementById("explain");
+  var stepCounterEl = document.getElementById("stepCounter");
+  var btnPrev = document.getElementById("btnPrev");
+  var btnNext = document.getElementById("btnNext");
+  var btnPlay = document.getElementById("btnPlay");
+  var btnReset = document.getElementById("btnReset");
+
+  function render() {
+    var st = steps[cur];
+
+    stringRowEl.innerHTML = "";
+    for (var i = 0; i < s.length; i++) {
+      var el = document.createElement("div");
+      var cls = "ctile";
+      if (st.idx === i) { cls += " current"; }
+      else if (st.idx !== null && i < st.idx) { cls += " done"; }
+      else if (st.idx === null && cur > 0) { cls += " done"; }
+      el.className = cls;
+      el.textContent = s[i] === " " ? "␣" : s[i];
+      stringRowEl.appendChild(el);
+    }
+
+    freqRowEl.innerHTML = "";
+    var qs = st.qualifySet;
+    for (var k = 0; k < st.order.length; k++) {
+      var c = st.order[k];
+      var wrap = document.createElement("div");
+      var cls2 = "ftile";
+      if (qs && qs.indexOf(c) !== -1) { cls2 += " qualify"; }
+      else if (st.bumpChar === c) { cls2 += " bump"; }
+      wrap.className = cls2;
+
+      var cEl = document.createElement("div");
+      cEl.className = "f-char";
+      cEl.textContent = "'" + c + "'";
+
+      var nEl = document.createElement("div");
+      nEl.className = "f-count";
+      nEl.textContent = "d=" + st.freq[c];
+
+      wrap.appendChild(cEl);
+      wrap.appendChild(nEl);
+      freqRowEl.appendChild(wrap);
+    }
+
+    resultLineEl.innerHTML = st.result
+      ? "<span class='hl'>" + st.result + "</span>"
+      : "Đang duyệt&hellip;";
+
+    explainEl.textContent = st.msg;
+    stepCounterEl.textContent = "Bước " + cur + " / " + (steps.length - 1);
+    btnPrev.disabled = (cur === 0);
+    btnNext.disabled = (cur === steps.length - 1);
+  }
+
+  btnNext.onclick = function () {
+    if (cur < steps.length - 1) { cur++; render(); }
+  };
+  btnPrev.onclick = function () {
+    if (cur > 0) { cur--; render(); }
+  };
+  btnReset.onclick = function () {
+    cur = 0; render();
+    if (timer) { clearInterval(timer); timer = null; btnPlay.textContent = "▶ Tự chạy"; }
+  };
+  btnPlay.onclick = function () {
+    if (timer) {
+      clearInterval(timer); timer = null; btnPlay.textContent = "▶ Tự chạy";
+    } else {
+      btnPlay.textContent = "⏸ Dừng";
+      timer = setInterval(function () {
+        if (cur < steps.length - 1) { cur++; render(); }
+        else { clearInterval(timer); timer = null; btnPlay.textContent = "▶ Tự chạy"; }
+      }, 650);
+    }
+  };
+
+  var tabCpp = document.getElementById("tabCpp");
+  var tabPy = document.getElementById("tabPy");
+  var codeCpp = document.getElementById("codeCpp");
+  var codePy = document.getElementById("codePy");
+
+  tabCpp.onclick = function () {
+    tabCpp.classList.add("active");
+    tabPy.classList.remove("active");
+    codeCpp.classList.remove("hidden");
+    codePy.classList.add("hidden");
+  };
+  tabPy.onclick = function () {
+    tabPy.classList.add("active");
+    tabCpp.classList.remove("active");
+    codePy.classList.remove("hidden");
+    codeCpp.classList.add("hidden");
+  };
+
+  render();
+})();
+</script>
+
+</body>
+</html>
