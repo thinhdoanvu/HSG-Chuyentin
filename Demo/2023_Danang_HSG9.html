@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bài 1 · Ước thực sự lớn nhất — HSG9 Đà Nẵng 2023</title>
+<style>
+  :root {
+    --bg: #10161d;
+    --surface: #1a232d;
+    --surface-2: #212c38;
+    --border: #2b3946;
+    --text: #e9eef3;
+    --text-muted: #8b98a6;
+    --text-faint: #5b6875;
+    --amber: #e8a552;
+    --blue: #5b9bf0;
+    --teal: #3fd7a8;
+    --gray: #3a4756;
+    --serif: Georgia, "Times New Roman", "Noto Serif", serif;
+    --mono: "SF Mono", "Cascadia Code", Consolas, "Roboto Mono", monospace;
+    --sans: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    line-height: 1.6;
+  }
+
+  .wrap {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+  }
+
+  header {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 24px;
+    margin-bottom: 32px;
+  }
+
+  .kicker {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--amber);
+    letter-spacing: 0.02em;
+    margin-bottom: 10px;
+  }
+
+  h1 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 32px;
+    margin: 0 0 10px;
+    line-height: 1.25;
+  }
+
+  .subtitle {
+    color: var(--text-muted);
+    font-size: 15px;
+    max-width: 60ch;
+  }
+
+  section {
+    margin-bottom: 40px;
+  }
+
+  h2 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 19px;
+    color: var(--text);
+    margin: 0 0 16px;
+  }
+
+  .statement {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 22px;
+    font-size: 14.5px;
+    color: var(--text-muted);
+  }
+
+  .statement strong { color: var(--text); font-weight: 600; }
+
+  .formula {
+    font-family: var(--mono);
+    background: var(--surface-2);
+    border-radius: 6px;
+    padding: 2px 8px;
+    color: var(--teal);
+    font-size: 13.5px;
+  }
+
+  /* ===== Controls ===== */
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+
+  button {
+    font-family: var(--sans);
+    font-size: 14px;
+    background: var(--surface-2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 9px 16px;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+
+  button:hover:not(:disabled) {
+    border-color: var(--amber);
+  }
+
+  button:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+
+  .step-counter {
+    margin-left: auto;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--text-faint);
+  }
+
+  /* ===== Visualization ===== */
+  .stage {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px 24px;
+    margin-bottom: 16px;
+  }
+
+  .x-display {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+
+  .x-display .label {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-faint);
+    letter-spacing: 0.05em;
+  }
+
+  .x-display .value {
+    font-family: var(--serif);
+    font-size: 52px;
+    color: var(--text);
+    margin-top: 4px;
+  }
+
+  .candidates {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 24px;
+    min-height: 76px;
+  }
+
+  .tile {
+    width: 64px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 4px;
+    text-align: center;
+    background: var(--surface-2);
+    transition: transform 0.15s ease;
+  }
+
+  .tile .i-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-faint);
+  }
+
+  .tile .i-value {
+    font-family: var(--mono);
+    font-size: 17px;
+    font-weight: 600;
+    margin-top: 2px;
+  }
+
+  .tile.current {
+    border-color: var(--blue);
+    background: rgba(91, 155, 240, 0.12);
+    transform: translateY(-2px);
+  }
+  .tile.current .i-value { color: var(--blue); }
+
+  .tile.rejected .i-value { color: var(--text-faint); }
+  .tile.rejected { opacity: 0.55; }
+
+  .tile.found {
+    border-color: var(--teal);
+    background: rgba(63, 215, 168, 0.12);
+  }
+  .tile.found .i-value { color: var(--teal); }
+
+  .result-line {
+    background: var(--surface-2);
+    border-radius: 8px;
+    padding: 14px 18px;
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 15px;
+    color: var(--text-muted);
+    min-height: 22px;
+  }
+
+  .result-line .hl { color: var(--teal); font-weight: 600; }
+
+  .explain {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    font-size: 14.5px;
+    color: var(--text);
+    min-height: 54px;
+    display: flex;
+    align-items: center;
+  }
+
+  /* ===== Code tabs ===== */
+  .tabs {
+    display: flex;
+    gap: 2px;
+    margin-bottom: 0;
+  }
+
+  .tab {
+    font-family: var(--mono);
+    font-size: 13px;
+    padding: 8px 16px;
+    background: var(--surface);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    border-bottom: none;
+    border-radius: 8px 8px 0 0;
+    cursor: pointer;
+  }
+
+  .tab.active {
+    color: var(--text);
+    background: var(--surface-2);
+  }
+
+  pre {
+    margin: 0;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 0 8px 8px 8px;
+    padding: 18px 20px;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.6;
+    color: #c9d4de;
+  }
+
+  pre.hidden { display: none; }
+
+  .kw { color: #e8a552; }
+  .fn { color: #5b9bf0; }
+  .cm { color: #5b6875; font-style: italic; }
+  .num { color: #3fd7a8; }
+
+  footer {
+    border-top: 1px solid var(--border);
+    padding-top: 20px;
+    font-size: 12.5px;
+    color: var(--text-faint);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <header>
+    <div class="kicker">HSG9 · Đà Nẵng · 2022–2023 · Bài 1</div>
+    <h1>Ước thực sự lớn nhất</h1>
+    <p class="subtitle">Kỹ thuật cốt lõi: số học (ước số) — duyệt ước nhỏ nhất chỉ đến √x, sau đó suy ra ước lớn nhất bằng phép chia.</p>
+  </header>
+
+  <section>
+    <h2>Đề bài</h2>
+    <div class="statement">
+      Số tự nhiên <strong>y</strong> được gọi là ước thực sự của số tự nhiên <strong>x</strong> nếu <em>x</em> chia hết cho <em>y</em> và <em>x &gt; y</em>.
+      Cho số nguyên dương <strong>x</strong> (x &gt; 1), tìm ước thực sự lớn nhất của x.
+      <br><br>
+      Công thức: <span class="formula">ước_thực_sự_lớn_nhất(x) = x ÷ (ước nhỏ nhất khác 1 của x)</span>
+    </div>
+  </section>
+
+  <section>
+    <h2>Minh họa từng bước</h2>
+
+    <div class="controls">
+      <button id="btnPrev">⟵ Lùi</button>
+      <button id="btnNext">Tiến ⟶</button>
+      <button id="btnPlay">▶ Tự chạy</button>
+      <button id="btnReset">↺ Bắt đầu lại</button>
+      <span class="step-counter" id="stepCounter">Bước 0 / 0</span>
+    </div>
+
+    <div class="stage">
+      <div class="x-display">
+        <div class="label">x =</div>
+        <div class="value" id="xValue">91</div>
+      </div>
+
+      <div class="candidates" id="candidates"></div>
+
+      <div class="result-line" id="resultLine">Nhấn "Tiến" để bắt đầu duyệt i từ 2.</div>
+    </div>
+
+    <div class="explain" id="explain">Sẵn sàng. Ví dụ minh họa: x = 91.</div>
+  </section>
+
+  <section>
+    <h2>Code tham khảo</h2>
+    <div class="tabs">
+      <div class="tab active" id="tabCpp">C++</div>
+      <div class="tab" id="tabPy">Python</div>
+    </div>
+    <pre id="codeCpp"><span class="kw">#include</span> &lt;bits/stdc++.h&gt;
+<span class="kw">using namespace</span> std;
+<span class="kw">#define</span> ll long long
+
+ll x;
+
+<span class="kw">void</span> <span class="fn">giai</span>()
+{
+    <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">2</span>; i &lt;= (<span class="kw">int</span>)sqrt(x); i++)
+    {
+        <span class="kw">if</span> (x % i == <span class="num">0</span>)
+        {
+            cout &lt;&lt; x / i;
+            <span class="kw">return</span>;
+        }
+    }
+    cout &lt;&lt; <span class="num">1</span>;
+}
+
+<span class="kw">int</span> <span class="fn">main</span>()
+{
+    cin &gt;&gt; x;
+    <span class="fn">giai</span>();
+    <span class="kw">return</span> <span class="num">0</span>;
+}</pre>
+    <pre id="codePy" class="hidden"><span class="kw">import</span> math
+
+<span class="kw">def</span> <span class="fn">giai</span>(x):
+    limit = <span class="fn">int</span>(math.isqrt(x))
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">2</span>, limit + <span class="num">1</span>):
+        <span class="kw">if</span> x % i == <span class="num">0</span>:
+            <span class="kw">return</span> x // i
+    <span class="kw">return</span> <span class="num">1</span>
+
+<span class="kw">if</span> __name__ == <span class="cm">"__main__"</span>:
+    x = <span class="fn">int</span>(<span class="fn">input</span>())
+    <span class="fn">print</span>(<span class="fn">giai</span>(x))</pre>
+  </section>
+
+  <footer>
+    Tài liệu HSG9 2022–2023 · Sở GD&amp;ĐT Đà Nẵng · Biên soạn lại phục vụ giảng dạy.
+  </footer>
+
+</div>
+
+<script>
+(function () {
+  var x = 91; // ví dụ minh họa: 91 = 7 × 13
+  var limit = Math.floor(Math.sqrt(x));
+
+  var steps = [];
+  steps.push({ i: null, tiles: [], msg: "x = " + x + ". Ta cần tìm ước nhỏ nhất khác 1 của x, chỉ cần thử i từ 2 đến √" + x + " ≈ " + limit + "." , result: null });
+
+  var found = null;
+  var tileStates = []; // {i, state: 'current'|'rejected'|'found'}
+
+  for (var i = 2; i <= limit; i++) {
+    tileStates.push({ i: i, state: "current" });
+    if (x % i === 0) {
+      tileStates[tileStates.length - 1].state = "found";
+      steps.push({
+        i: i,
+        tiles: tileStates.slice(),
+        msg: "i = " + i + ": " + x + " chia hết cho " + i + " → " + i + " là ước nhỏ nhất khác 1 của " + x + ". Dừng lại ngay, không cần thử tiếp.",
+        result: "Ước nhỏ nhất = " + i + " → Ước thực sự lớn nhất = " + x + " ÷ " + i + " = " + (x / i)
+      });
+      found = i;
+      break;
+    } else {
+      steps.push({
+        i: i,
+        tiles: tileStates.slice(),
+        msg: "i = " + i + ": " + x + " không chia hết cho " + i + " → thử tiếp i = " + (i + 1) + ".",
+        result: null
+      });
+      tileStates[tileStates.length - 1].state = "rejected";
+    }
+  }
+
+  if (found === null) {
+    steps.push({
+      i: null,
+      tiles: tileStates.slice(),
+      msg: "Không tìm thấy ước nào từ 2 đến " + limit + " → " + x + " là số nguyên tố, không có ước thực sự nào khác 1.",
+      result: "Ước thực sự lớn nhất = 1"
+    });
+  }
+
+  var cur = 0;
+  var timer = null;
+
+  var xValueEl = document.getElementById("xValue");
+  var candidatesEl = document.getElementById("candidates");
+  var resultLineEl = document.getElementById("resultLine");
+  var explainEl = document.getElementById("explain");
+  var stepCounterEl = document.getElementById("stepCounter");
+  var btnPrev = document.getElementById("btnPrev");
+  var btnNext = document.getElementById("btnNext");
+  var btnPlay = document.getElementById("btnPlay");
+  var btnReset = document.getElementById("btnReset");
+
+  function render() {
+    var s = steps[cur];
+    xValueEl.textContent = x;
+
+    candidatesEl.innerHTML = "";
+    for (var k = 0; k < s.tiles.length; k++) {
+      var t = s.tiles[k];
+      var el = document.createElement("div");
+      el.className = "tile " + t.state;
+
+      var lbl = document.createElement("div");
+      lbl.className = "i-label";
+      lbl.textContent = "i";
+
+      var val = document.createElement("div");
+      val.className = "i-value";
+      val.textContent = t.i;
+
+      el.appendChild(lbl);
+      el.appendChild(val);
+      candidatesEl.appendChild(el);
+    }
+
+    resultLineEl.innerHTML = s.result
+      ? "<span class='hl'>" + s.result + "</span>"
+      : "Đang duyệt&hellip;";
+
+    explainEl.textContent = s.msg;
+    stepCounterEl.textContent = "Bước " + cur + " / " + (steps.length - 1);
+    btnPrev.disabled = (cur === 0);
+    btnNext.disabled = (cur === steps.length - 1);
+  }
+
+  btnNext.onclick = function () {
+    if (cur < steps.length - 1) { cur++; render(); }
+  };
+  btnPrev.onclick = function () {
+    if (cur > 0) { cur--; render(); }
+  };
+  btnReset.onclick = function () {
+    cur = 0; render();
+    if (timer) { clearInterval(timer); timer = null; btnPlay.textContent = "▶ Tự chạy"; }
+  };
+  btnPlay.onclick = function () {
+    if (timer) {
+      clearInterval(timer); timer = null; btnPlay.textContent = "▶ Tự chạy";
+    } else {
+      btnPlay.textContent = "⏸ Dừng";
+      timer = setInterval(function () {
+        if (cur < steps.length - 1) { cur++; render(); }
+        else { clearInterval(timer); timer = null; btnPlay.textContent = "▶ Tự chạy"; }
+      }, 1100);
+    }
+  };
+
+  var tabCpp = document.getElementById("tabCpp");
+  var tabPy = document.getElementById("tabPy");
+  var codeCpp = document.getElementById("codeCpp");
+  var codePy = document.getElementById("codePy");
+
+  tabCpp.onclick = function () {
+    tabCpp.classList.add("active");
+    tabPy.classList.remove("active");
+    codeCpp.classList.remove("hidden");
+    codePy.classList.add("hidden");
+  };
+  tabPy.onclick = function () {
+    tabPy.classList.add("active");
+    tabCpp.classList.remove("active");
+    codePy.classList.remove("hidden");
+    codeCpp.classList.add("hidden");
+  };
+
+  render();
+})();
+</script>
+
+</body>
+</html>
