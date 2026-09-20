@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cách hình thành số đối xứng — dạng Lẻ &amp; Chẵn</title>
+<style>
+  :root {
+    --bg: #10161d;
+    --surface: #1a232d;
+    --surface-2: #212c38;
+    --border: #2b3946;
+    --text: #e9eef3;
+    --text-muted: #8b98a6;
+    --text-faint: #5b6875;
+    --amber: #e8a552;
+    --blue: #5b9bf0;
+    --teal: #3fd7a8;
+    --red: #e2685f;
+    --serif: Georgia, "Times New Roman", "Noto Serif", serif;
+    --mono: "SF Mono", "Cascadia Code", Consolas, "Roboto Mono", monospace;
+    --sans: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    line-height: 1.6;
+  }
+
+  .wrap {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+  }
+
+  header {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 24px;
+    margin-bottom: 32px;
+  }
+
+  .kicker {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--amber);
+    letter-spacing: 0.02em;
+    margin-bottom: 10px;
+  }
+
+  h1 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 30px;
+    margin: 0 0 10px;
+    line-height: 1.25;
+  }
+
+  .subtitle {
+    color: var(--text-muted);
+    font-size: 15px;
+    max-width: 62ch;
+  }
+
+  section { margin-bottom: 36px; }
+
+  h2 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 18px;
+    color: var(--text);
+    margin: 0 0 16px;
+  }
+
+  .mode-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  .mode-tab {
+    flex: 1;
+    font-family: var(--sans);
+    font-size: 14.5px;
+    text-align: center;
+    padding: 12px 10px;
+    background: var(--surface);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    cursor: pointer;
+    transition: border-color 0.15s ease, color 0.15s ease;
+  }
+
+  .mode-tab .mt-formula {
+    display: block;
+    font-family: var(--mono);
+    font-size: 12px;
+    margin-top: 3px;
+    color: var(--text-faint);
+  }
+
+  .mode-tab.active {
+    border-color: var(--blue);
+    color: var(--text);
+    background: rgba(91, 155, 240, 0.08);
+  }
+
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+
+  button {
+    font-family: var(--sans);
+    font-size: 14px;
+    background: var(--surface-2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 9px 16px;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+
+  button:hover:not(:disabled) { border-color: var(--amber); }
+  button:disabled { opacity: 0.35; cursor: default; }
+
+  .step-counter {
+    margin-left: auto;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--text-faint);
+  }
+
+  .stage {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px 24px;
+    margin-bottom: 16px;
+  }
+
+  .zone-label {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--text-faint);
+    letter-spacing: 0.04em;
+    margin-bottom: 10px;
+  }
+
+  .digit-row {
+    display: flex;
+    gap: 5px;
+    min-height: 52px;
+    margin-bottom: 24px;
+    align-items: center;
+  }
+
+  .digit-row.y-row { margin-bottom: 28px; }
+
+  .dtile {
+    width: 42px;
+    height: 46px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface-2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono);
+    font-size: 19px;
+    color: var(--text-muted);
+    transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+  }
+
+  .dtile.x-existing { color: var(--text); }
+  .dtile.x-new {
+    border-color: var(--teal);
+    background: rgba(63, 215, 168, 0.14);
+    color: var(--teal);
+    transform: translateY(-4px) scale(1.05);
+  }
+
+  .dtile.y-existing { color: var(--text); }
+  .dtile.y-taken {
+    border-color: var(--amber);
+    background: rgba(232, 165, 82, 0.14);
+    color: var(--amber);
+  }
+  .dtile.y-removed { opacity: 0.15; }
+
+  .empty-note {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--text-faint);
+    padding: 0 4px;
+  }
+
+  .var-values {
+    display: flex;
+    gap: 24px;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--text-faint);
+    margin-bottom: 4px;
+  }
+
+  .var-values .vv-x { color: var(--blue); }
+  .var-values .vv-y { color: var(--amber); }
+
+  .explain {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    font-size: 14.5px;
+    color: var(--text);
+    min-height: 54px;
+    display: flex;
+    align-items: center;
+  }
+
+  .check-panel {
+    display: none;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px dashed var(--border);
+  }
+
+  .check-panel.show { display: block; }
+
+  .check-row {
+    display: flex;
+    gap: 5px;
+    justify-content: center;
+    margin-bottom: 8px;
+  }
+
+  .check-label {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--text-faint);
+    text-align: center;
+    margin-bottom: 6px;
+  }
+
+  .check-verdict {
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 14px;
+    color: var(--teal);
+    margin-top: 10px;
+  }
+
+  footer {
+    border-top: 1px solid var(--border);
+    padding-top: 20px;
+    font-size: 12.5px;
+    color: var(--text-faint);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <header>
+    <div class="kicker">Minh họa cơ chế · Bài NTDX — Số nguyên tố đối xứng</div>
+    <h1>Cách hình thành số đối xứng — dạng Lẻ &amp; Chẵn</h1>
+    <p class="subtitle">Xem trực tiếp từng bước biến x "lớn dần" và biến y "nhỏ dần" khi ghép số đối xứng từ nửa trái i = 123.</p>
+  </header>
+
+  <section>
+    <div class="mode-tabs">
+      <div class="mode-tab active" id="tabOdd">
+        Dạng LẺ — NkN
+        <span class="mt-formula">y = x // 10 (bỏ chữ số cuối trước)</span>
+      </div>
+      <div class="mode-tab" id="tabEven">
+        Dạng CHẴN — NkkN
+        <span class="mt-formula">y = x (giữ nguyên toàn bộ)</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button id="btnPrev">⟵ Lùi</button>
+      <button id="btnNext">Tiến ⟶</button>
+      <button id="btnPlay">▶ Tự chạy</button>
+      <button id="btnReset">↺ Bắt đầu lại</button>
+      <span class="step-counter" id="stepCounter">Bước 0 / 0</span>
+    </div>
+
+    <div class="stage">
+      <div class="var-values">
+        <span class="vv-x" id="xVarLabel">x = 123</span>
+        <span class="vv-y" id="yVarLabel">y = 12</span>
+      </div>
+
+      <div class="zone-label">x — số kết quả đang được xây dựng (đọc từ trái sang phải)</div>
+      <div class="digit-row" id="xRow"></div>
+
+      <div class="zone-label">y — "kho" chữ số còn lại, mỗi bước lấy đúng 1 chữ số ở cuối</div>
+      <div class="digit-row y-row" id="yRow"></div>
+
+      <div class="check-panel" id="checkPanel">
+        <div class="check-label">Kiểm tra đối xứng: đọc xuôi so với đọc ngược</div>
+        <div class="check-row" id="forwardRow"></div>
+        <div class="check-row" id="backwardRow"></div>
+        <div class="check-verdict" id="checkVerdict"></div>
+      </div>
+    </div>
+
+    <div class="explain" id="explain">Nhấn "Tiến" để bắt đầu.</div>
+  </section>
+
+  <footer>
+    Minh họa dùng cho giảng dạy — cơ chế tương ứng đúng với hàm dx1()/dx2() trong lời giải bài NTDX (HSG9 Đà Nẵng 2023).
+  </footer>
+
+</div>
+
+<script>
+(function () {
+  var I_VALUE = 123;
+
+  function digitsOf(n) {
+    if (n === 0) return [0];
+    var s = String(n);
+    var arr = [];
+    for (var k = 0; k < s.length; k++) { arr.push(parseInt(s[k], 10)); }
+    return arr;
+  }
+
+  function numberFromDigits(arr) {
+    var s = "";
+    for (var k = 0; k < arr.length; k++) { s += arr[k]; }
+    return s === "" ? 0 : parseInt(s, 10);
+  }
+
+  function buildTrace(iVal, isOdd) {
+    var steps = [];
+    var xDigits = digitsOf(iVal);
+    var yFull = isOdd ? Math.floor(iVal / 10) : iVal;
+    var yDigits = digitsOf(yFull);
+
+    if (isOdd) {
+      steps.push({
+        xDigits: xDigits.slice(), yDigits: digitsOf(iVal).slice(), yDigitsAfterCut: yDigits.slice(),
+        highlightTakenIdx: null, newXIdx: null, phase: "cut",
+        msg: "Bắt đầu với x = " + iVal + ". Vì đang ghép DẠNG LẺ, trước tiên bỏ chữ số cuối của x để tạo kho y: y = x // 10 = " + yFull + "."
+      });
+    } else {
+      steps.push({
+        xDigits: xDigits.slice(), yDigits: yDigits.slice(), yDigitsAfterCut: null,
+        highlightTakenIdx: null, newXIdx: null, phase: "init",
+        msg: "Bắt đầu với x = " + iVal + ". Vì đang ghép DẠNG CHẴN, giữ nguyên toàn bộ x làm kho y: y = x = " + iVal + "."
+      });
+    }
+
+    var curX = xDigits.slice();
+    var curY = yDigits.slice();
+
+    while (curY.length > 0) {
+      var takenIdx = curY.length - 1;
+      var digit = curY[takenIdx];
+
+      steps.push({
+        xDigits: curX.slice(), yDigits: curY.slice(), yDigitsAfterCut: null,
+        highlightTakenIdx: takenIdx, newXIdx: null, phase: "take",
+        msg: "Lấy chữ số cuối của y (= " + numberFromDigits(curY) + "): digit = y % 10 = " + digit + "."
+      });
+
+      curX.push(digit);
+      curY.pop();
+
+      steps.push({
+        xDigits: curX.slice(), yDigits: curY.slice(), yDigitsAfterCut: null,
+        highlightTakenIdx: null, newXIdx: curX.length - 1, phase: "commit",
+        msg: "Gắn chữ số " + digit + " vào cuối x → x = " + numberFromDigits(curX) + ". Đồng thời cắt chữ số đó khỏi y (y = y // 10) → y = " + (curY.length === 0 ? 0 : numberFromDigits(curY)) + "."
+      });
+    }
+
+    steps.push({
+      xDigits: curX.slice(), yDigits: [], yDigitsAfterCut: null,
+      highlightTakenIdx: null, newXIdx: null, phase: "done",
+      msg: "y = 0 → dừng vòng lặp. Kết quả cuối cùng: " + numberFromDigits(curX) + "."
+    });
+
+    return steps;
+  }
+
+  var tracesOdd = buildTrace(I_VALUE, true);
+  var tracesEven = buildTrace(I_VALUE, false);
+
+  var mode = "odd";
+  var cur = 0;
+  var timer = null;
+
+  var xRow = document.getElementById("xRow");
+  var yRow = document.getElementById("yRow");
+  var explain = document.getElementById("explain");
+  var stepCounter = document.getElementById("stepCounter");
+  var xVarLabel = document.getElementById("xVarLabel");
+  var yVarLabel = document.getElementById("yVarLabel");
+  var checkPanel = document.getElementById("checkPanel");
+  var forwardRow = document.getElementById("forwardRow");
+  var backwardRow = document.getElementById("backwardRow");
+  var checkVerdict = document.getElementById("checkVerdict");
+
+  var btnPrev = document.getElementById("btnPrev");
+  var btnNext = document.getElementById("btnNext");
+  var btnPlay = document.getElementById("btnPlay");
+  var btnReset = document.getElementById("btnReset");
+  var tabOdd = document.getElementById("tabOdd");
+  var tabEven = document.getElementById("tabEven");
+
+  function currentSteps() {
+    return mode === "odd" ? tracesOdd : tracesEven;
+  }
+
+  function makeTile(val, cls) {
+    var el = document.createElement("div");
+    el.className = "dtile " + cls;
+    el.textContent = val;
+    return el;
+  }
+
+  function render() {
+    var steps = currentSteps();
+    var s = steps[cur];
+
+    xRow.innerHTML = "";
+    for (var i = 0; i < s.xDigits.length; i++) {
+      var cls = (s.newXIdx === i) ? "x-new" : "x-existing";
+      xRow.appendChild(makeTile(s.xDigits[i], cls));
+    }
+
+    yRow.innerHTML = "";
+    if (s.yDigits.length === 0) {
+      var note = document.createElement("div");
+      note.className = "empty-note";
+      note.textContent = "(y = 0, kho rỗng)";
+      yRow.appendChild(note);
+    } else {
+      for (var j = 0; j < s.yDigits.length; j++) {
+        var cls2 = (s.highlightTakenIdx === j) ? "y-taken" : "y-existing";
+        yRow.appendChild(makeTile(s.yDigits[j], cls2));
+      }
+    }
+
+    xVarLabel.textContent = "x = " + numberFromDigits(s.xDigits);
+    yVarLabel.textContent = "y = " + (s.yDigits.length === 0 ? 0 : numberFromDigits(s.yDigits));
+
+    explain.textContent = s.msg;
+    stepCounter.textContent = "Bước " + cur + " / " + (steps.length - 1);
+    btnPrev.disabled = (cur === 0);
+    btnNext.disabled = (cur === steps.length - 1);
+
+    if (s.phase === "done") {
+      checkPanel.classList.add("show");
+      var forward = s.xDigits.slice();
+      var backward = s.xDigits.slice().reverse();
+      forwardRow.innerHTML = "";
+      backwardRow.innerHTML = "";
+      var allMatch = true;
+      for (var k = 0; k < forward.length; k++) {
+        var match = forward[k] === backward[k];
+        if (!match) { allMatch = false; }
+        forwardRow.appendChild(makeTile(forward[k], match ? "x-existing" : "y-taken"));
+        backwardRow.appendChild(makeTile(backward[k], match ? "x-existing" : "y-taken"));
+      }
+      checkVerdict.textContent = allMatch
+        ? "Đọc xuôi = Đọc ngược → ĐÚNG LÀ SỐ ĐỐI XỨNG ✓"
+        : "Không khớp — có lỗi trong quá trình ghép.";
+    } else {
+      checkPanel.classList.remove("show");
+    }
+  }
+
+  btnNext.onclick = function () {
+    var steps = currentSteps();
+    if (cur < steps.length - 1) { cur++; render(); }
+  };
+  btnPrev.onclick = function () {
+    if (cur > 0) { cur--; render(); }
+  };
+  btnReset.onclick = function () {
+    cur = 0; render();
+    if (timer) { clearInterval(timer); timer = null; btnPlay.textContent = "▶ Tự chạy"; }
+  };
+  btnPlay.onclick = function () {
+    if (timer) {
+      clearInterval(timer); timer = null; btnPlay.textContent = "▶ Tự chạy";
+    } else {
+      btnPlay.textContent = "⏸ Dừng";
+      timer = setInterval(function () {
+        var steps = currentSteps();
+        if (cur < steps.length - 1) { cur++; render(); }
+        else { clearInterval(timer); timer = null; btnPlay.textContent = "▶ Tự chạy"; }
+      }, 1300);
+    }
+  };
+
+  function switchMode(newMode) {
+    if (mode === newMode) return;
+    mode = newMode;
+    cur = 0;
+    if (timer) { clearInterval(timer); timer = null; btnPlay.textContent = "▶ Tự chạy"; }
+    tabOdd.classList.toggle("active", mode === "odd");
+    tabEven.classList.toggle("active", mode === "even");
+    render();
+  }
+
+  tabOdd.onclick = function () { switchMode("odd"); };
+  tabEven.onclick = function () { switchMode("even"); };
+
+  render();
+})();
+</script>
+
+</body>
+</html>
