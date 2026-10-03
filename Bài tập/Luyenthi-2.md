@@ -1676,6 +1676,48 @@ if __name__ == "__main__":
     print(giai(s))
 ```
 
+```
+# Don gian la dung Set hoac Dict
+'''
+DEM KY TU CON THIEU TRONG 26 CHU CAI IN HOA
+S='ABCDEFGHIJKLMNOPQRSTUVWXY'
+OUTPUT: Z
+'''
+# cach 1: Cu chuoi cua Quan ngao
+# d = {'A': 0, 'B': 0, 'C': 0, 'D': 0, 'E': 0, 'F': 0, 'G': 0, 'H': 0, 'I': 0, 'J': 0, 'K': 0, 'L': 0, 'M': 0, 'N': 0, 'O': 0, 'P': 0, 'Q': 0, 'R': 0, 'S': 0, 'T': 0, 'U': 0, 'V': 0, 'W': 0, 'X': 0, 'Y': 0, 'Z': 0}
+d={}
+for i in range(26):
+    d[chr(65+i)] = 0
+print(d)
+
+S='ABCDEFGHIJKLMNOPQRSTUVWXY'
+
+for i in S:
+    d[i] = d.get(i,0) + 1
+print(d)
+
+# dem xem ky tu nao con thieu 
+for i in d:
+    if d[i] == 0:
+        print(i)
+
+# cach 2 dung set cho nhanh
+s = set()
+for i in range(26):
+    s.add(chr(65+i))
+print(s)
+for i in s:
+    if i not in S:
+        print(i)
+'''
+{'A': 0, 'B': 0, 'C': 0, 'D': 0, 'E': 0, 'F': 0, 'G': 0, 'H': 0, 'I': 0, 'J': 0, 'K': 0, 'L': 0, 'M': 0, 'N': 0, 'O': 0, 'P': 0, 'Q': 0, 'R': 0, 'S': 0, 'T': 0, 'U': 0, 'V': 0, 'W': 0, 'X': 0, 'Y': 0, 'Z': 0}
+{'A': 1, 'B': 1, 'C': 1, 'D': 1, 'E': 1, 'F': 1, 'G': 1, 'H': 1, 'I': 1, 'J': 1, 'K': 1, 'L': 1, 'M': 1, 'N': 1, 'O': 1, 'P': 1, 'Q': 1, 'R': 1, 'S': 1, 'T': 1, 'U': 1, 'V': 1, 'W': 1, 'X': 1, 'Y': 1, 'Z': 0}
+Z
+{'D', 'Y', 'J', 'F', 'M', 'Z', 'L', 'O', 'Q', 'X', 'R', 'P', 'N', 'B', 'T', 'W', 'H', 'G', 'E', 'I', 'S', 'U', 'A', 'V', 'C', 'K'}
+Z
+'''
+```
+
 </details>
 
 <details>
