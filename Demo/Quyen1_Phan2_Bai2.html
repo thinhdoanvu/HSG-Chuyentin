@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dãy từ liên tiếp có độ dài bằng nhau</title>
+<style>
+:root{--bg:#0f1420;--card:#171e2e;--line:#2a3550;--tx:#e6ebf5;--mut:#8e9ab5;--ac:#5eead4;--warn:#fbbf24;--ok:#4ade80;--bad:#f87171;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:system-ui,sans-serif;padding:16px;max-width:980px;margin:auto}
+h1{font-family:Georgia,serif;font-size:22px;margin:4px 0 4px}
+p.sub{color:var(--mut);margin:0 0 14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:12px}
+button{background:#22304d;color:var(--tx);border:1px solid var(--line);border-radius:6px;padding:7px 12px;cursor:pointer;font-size:14px}
+button:hover{border-color:var(--ac)} button.on{background:var(--ac);color:#06201c;font-weight:600}
+input[type=text]{background:#0b101b;color:var(--tx);border:1px solid var(--line);border-radius:6px;padding:7px;width:100%;font-family:ui-monospace,monospace}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:8px}
+.raw{font-family:ui-monospace,monospace;background:#0b101b;border-radius:6px;padding:8px;word-break:break-all;color:var(--mut)}
+.words{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+.w{border:2px solid var(--line);border-radius:8px;padding:6px 10px;text-align:center;min-width:48px;opacity:.45}
+.w .t{font-family:ui-monospace,monospace;font-size:16px}
+.w .l{font-size:12px;color:var(--mut)}
+.w.seen{opacity:1}
+.w.run{border-color:var(--ok);background:#12301f;opacity:1}
+.w.cur{border-color:var(--warn);box-shadow:0 0 0 2px var(--warn)}
+.w.best{background:#0f3a35;border-color:var(--ac)}
+.vars{display:flex;gap:10px;flex-wrap:wrap}
+.v{background:#0b101b;border-radius:8px;padding:8px 14px;text-align:center}
+.v b{display:block;font-size:24px;font-family:ui-monospace,monospace}
+.msg{min-height:44px;line-height:1.5}
+pre{background:#0b101b;border-radius:8px;padding:12px;overflow:auto;font-size:13px;line-height:1.5;margin:8px 0 0}
+.hl{color:var(--ac)} .warn{color:var(--warn)} .ok{color:var(--ok)}
+</style>
+</head>
+<body>
+<h1>Số từ liên tiếp có độ dài bằng nhau nhiều nhất</h1>
+<p class="sub">Tách xâu thành các từ, đổi mỗi từ thành <b>độ dài</b>, rồi tìm đoạn liên tiếp dài nhất gồm các số giống nhau.</p>
+
+<div class="card">
+  <div class="row" id="presets"></div>
+  <input type="text" id="inp" placeholder="Nhập xâu tùy ý (chữ thường và khoảng trắng)">
+  <div class="row" style="margin-top:8px"><button id="load">Dùng xâu này</button></div>
+</div>
+
+<div class="card">
+  <div class="raw" id="raw"></div>
+  <div class="words" id="words"></div>
+  <div class="vars">
+    <div class="v">từ thứ<b id="vi">-</b></div>
+    <div class="v">độ dài<b id="vl">-</b></div>
+    <div class="v">dem (đoạn đang xét)<b id="vd">0</b></div>
+    <div class="v">P (tốt nhất)<b id="vp" class="ok">0</b></div>
+  </div>
+  <div class="msg" id="msg" style="margin-top:10px"></div>
+  <div class="row">
+    <button id="prev">◀ Lùi</button>
+    <button id="next">Bước tiếp ▶</button>
+    <button id="auto">▶ Tự chạy</button>
+    <button id="reset">↺ Đặt lại</button>
+  </div>
+</div>
+
+<div class="card">
+  <div class="row"><button class="on" id="tcpp">C++</button><button id="tpy">Python</button></div>
+  <pre id="code"></pre>
+</div>
+
+<script>
+var PRESETS=[
+ {n:"Ví dụ 1 → 3",s:"a aa bb cc def ghi"},
+ {n:"Ví dụ 2 → 5",s:"a a a a a bb bb bb bb c c"},
+ {n:"Nhiều khoảng trắng",s:"ab   cd  ef gh    ijk"},
+ {n:"Toàn khác nhau → 1",s:"a bb ccc dddd"}
+];
+var CPP=
+"#include <iostream>\n#include <sstream>\n#include <string>\nusing namespace std;\n\n"+
+"int main() {\n    int T;\n    cin >> T;\n    cin.ignore();              // bỏ dấu xuống dòng sau số T\n\n"+
+"    for (int t = 0; t < T; t++) {\n        string line;\n        getline(cin, line);\n\n"+
+"        stringstream ss(line);     // >> tự bỏ qua mọi khoảng trắng thừa\n        string word;\n\n"+
+"        int dem = 0;               // độ dài đoạn liên tiếp đang xét\n        int P = 0;                 // đáp án\n        int doDaiTruoc = -1;       // độ dài từ đứng trước\n\n"+
+"        while (ss >> word) {\n            int doDai = word.size();\n\n"+
+"            if (doDai == doDaiTruoc) {\n                dem = dem + 1;     // nối dài đoạn\n            } else {\n                dem = 1;           // bắt đầu đoạn mới\n            }\n\n"+
+"            if (dem > P) {\n                P = dem;\n            }\n\n"+
+"            doDaiTruoc = doDai;\n        }\n\n        cout << P << endl;\n    }\n    return 0;\n}\n";
+var PY=
+"T = int(input())\n\nfor t in range(T):\n    line = input()\n\n"+
+"    words = line.split()       # split() không tham số: bỏ qua khoảng trắng thừa\n\n"+
+"    dem = 0                    # độ dài đoạn liên tiếp đang xét\n    P = 0                      # đáp án\n    do_dai_truoc = -1          # độ dài từ đứng trước\n\n"+
+"    for word in words:\n        do_dai = len(word)\n\n"+
+"        if do_dai == do_dai_truoc:\n            dem = dem + 1          # nối dài đoạn\n        else:\n            dem = 1                # bắt đầu đoạn mới\n\n"+
+"        if dem > P:\n            P = dem\n\n"+
+"        do_dai_truoc = do_dai\n\n    print(P)\n";
+
+var words=[],steps=[],pos=0,timer=null;
+
+function build(s){
+  words=s.split(" ").filter(function(x){return x.length>0;});
+  steps=[];
+  var dem=0,P=0,prev=-1,bestEnd=-1;
+  steps.push({i:-1,dem:0,P:0,bestEnd:-1,msg:"Tách xâu thành <b>"+words.length+" từ</b> (bỏ khoảng trắng thừa). Ban đầu <span class='hl'>dem = 0</span>, <span class='hl'>P = 0</span>."});
+  for(var i=0;i<words.length;i++){
+    var L=words[i].length,m;
+    if(L===prev){dem++;m="Từ <b>"+words[i]+"</b> dài "+L+" = độ dài từ trước ("+prev+") ⇒ <span class='ok'>dem tăng lên "+dem+"</span>.";}
+    else{dem=1;m="Từ <b>"+words[i]+"</b> dài "+L+(prev<0?" (từ đầu tiên)":" ≠ "+prev)+" ⇒ <span class='warn'>bắt đầu đoạn mới, dem = 1</span>.";}
+    if(dem>P){P=dem;bestEnd=i;m+=" dem &gt; P ⇒ <span class='ok'>P = "+P+"</span>.";}
+    steps.push({i:i,dem:dem,P:P,bestEnd:bestEnd,msg:m});
+    prev=L;
+  }
+  var f=steps[steps.length-1];
+  steps.push({i:words.length,dem:f.dem,P:f.P,bestEnd:f.bestEnd,msg:"Hết xâu. <b class='ok'>Đáp án P = "+f.P+"</b>."});
+  pos=0;render();
+}
+
+function render(){
+  var st=steps[pos];
+  document.getElementById("raw").textContent='"'+document.getElementById("inp").value+'"';
+  var h="";
+  for(var k=0;k<words.length;k++){
+    var c="w";
+    if(k<=st.i)c+=" seen";
+    if(st.i>=0&&st.i<words.length&&k<=st.i&&k>st.i-st.dem)c+=" run";
+    if(k===st.i)c+=" cur";
+    if(pos===steps.length-1&&st.P>0&&k<=st.bestEnd&&k>st.bestEnd-st.P)c+=" best";
+    h+="<div class='"+c+"'><div class='t'>"+words[k]+"</div><div class='l'>độ dài "+words[k].length+"</div></div>";
+  }
+  document.getElementById("words").innerHTML=h;
+  var onWord=st.i>=0&&st.i<words.length;
+  document.getElementById("vi").textContent=onWord?(st.i+1):"-";
+  document.getElementById("vl").textContent=onWord?words[st.i].length:"-";
+  document.getElementById("vd").textContent=st.dem;
+  document.getElementById("vp").textContent=st.P;
+  document.getElementById("msg").innerHTML=st.msg;
+}
+
+function stop(){if(timer){clearInterval(timer);timer=null;document.getElementById("auto").textContent="▶ Tự chạy";}}
+function next(){if(pos<steps.length-1){pos++;render();}else stop();}
+
+function load(){stop();build(document.getElementById("inp").value);}
+
+(function init(){
+  var box=document.getElementById("presets");
+  PRESETS.forEach(function(p){
+    var b=document.createElement("button");b.textContent=p.n;
+    b.onclick=function(){document.getElementById("inp").value=p.s;load();};
+    box.appendChild(b);
+  });
+  document.getElementById("load").onclick=load;
+  document.getElementById("next").onclick=function(){stop();next();};
+  document.getElementById("prev").onclick=function(){stop();if(pos>0){pos--;render();}};
+  document.getElementById("reset").onclick=function(){stop();pos=0;render();};
+  document.getElementById("auto").onclick=function(){
+    if(timer){stop();return;}
+    if(pos>=steps.length-1)pos=0;
+    document.getElementById("auto").textContent="⏸ Dừng";
+    timer=setInterval(next,900);
+  };
+  function tab(w){
+    document.getElementById("code").textContent=w==="cpp"?CPP:PY;
+    document.getElementById("tcpp").className=w==="cpp"?"on":"";
+    document.getElementById("tpy").className=w==="py"?"on":"";
+  }
+  document.getElementById("tcpp").onclick=function(){tab("cpp");};
+  document.getElementById("tpy").onclick=function(){tab("py");};
+  tab("cpp");
+  document.getElementById("inp").value=PRESETS[0].s;
+  load();
+})();
+</script>
+</body>
+</html>
