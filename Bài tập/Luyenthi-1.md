@@ -942,6 +942,14 @@ def solve():
     print(khoang_cach[y_chuong][x_chuong])
 
 solve()
+
+'''
+Thao tác	Ý nghĩa	Tốc độ
+append(x)	thêm x vào cuối	O(1)
+popleft()	lấy và bỏ phần tử ở đầu	O(1)
+appendleft(x)	thêm x vào đầu	O(1)
+pop()	lấy và bỏ phần tử ở cuối	O(1)
+'''
 ```
 
 </details>
