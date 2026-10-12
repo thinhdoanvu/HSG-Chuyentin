@@ -942,76 +942,78 @@ int main()
 ```python
 from collections import deque
 
+# Buoc 1. doc du lieu
+r,c  = map(int, input().split())
+bando = []
+for i in range(r):
+    dong = input()
+    bando.append(dong)
+    
+# Buoc 2. Xay dung ban do gom cac tu TRUE FALSE
+x_bessie, y_bessie = 0,0
+x_chuong, y_chuong = 0,0
+diduoc = []
+for i in range(r):
+    hang = []
+    for j in range(c):
+        kytu = bando[i][j]
+        if kytu == 'B':
+            x_chuong = j 
+            y_chuong = i
+            hang.append(True)
+        if kytu == 'C':
+            x_bessie = j 
+            y_bessie = i
+            hang.append(True)
+        if kytu == '.':
+            hang.append(True)
+        if kytu == '*':
+            hang.append(False)
+    diduoc.append(hang)
+print(f"x_bessie ({x_bessie}), y_bessie ({y_bessie}), x_chuong ({x_chuong}), y_chuong ({y_chuong})")
 
-def giai_bai():
-    dong_dau = input().split()
-    so_hang = int(dong_dau[0])
-    so_cot = int(dong_dau[1])
+# Buoc 3. BFS nguoc tu o ket thuc x_bessie, y_bessie
+def solve(x_chuong, y_chuong):
+    'Tao ra mot luoi khoang cach tim duoc toan la -1'
+    khoangcach = []
+    for i in range(r):
+        dong = [-1]*c
+        khoangcach.append(dong)
+    '''gan khoangcach cua con bo la 0 tai sao?
+    1. dam bao ket qua tim duoc luon dung bang dap an ma khong it hon 1 
+    2. Neu -1 nghia la co the duoc xem xet de dua vao hang xom
+    '''
+    # khoangcach[x_bessie][y_bessie] = 0: SAI nhe
+    khoangcach[y_bessie][x_bessie] = 0
+    print(f"khoangcach: {khoangcach}")
+    
+    hangdoi = deque()
+    hangdoi.append((x_bessie, y_bessie))
+    print(f"hangdoi: {hangdoi}")
+    
+    dx = [1,-1,0,0]
+    dy = [0,0,1,-1]
+    
+    while len(hangdoi)>0:
+        x,y = hangdoi.popleft()
+        print(f"dang xet: {x,y}")
+        # tim cac dinh ke cua x,y 
+        for i in range(4):
+            nx = x + dx[i]
+            ny = y + dy[i] 
+            # co duong di va chua tung duoc xet (khoangcach[][]=-1)
+            if 0<=nx<c and 0<=ny<r:
+                if diduoc[ny][nx] and khoangcach[ny][nx] == -1:
+                    khoangcach[ny][nx] = khoangcach[y][x] + 1 
+                    hangdoi.append((nx, ny))
+        print(f"hangdoi: {hangdoi}")    
+    print(f"khoangcach: {khoangcach}")
+    print(f"so o co ma con bo an duoc: {khoangcach[y_chuong][x_chuong]}")
 
-    ban_do = []
-    for y in range(so_hang):
-        dong = input()
-        ban_do.append(dong)
-
-    x_bessie = 0
-    y_bessie = 0
-    x_chuong = 0
-    y_chuong = 0
-
-    # Buoc 1: dung bang di_duoc (True = di duoc, False = da)
-    di_duoc = []
-    for y in range(so_hang):
-        hang_di_duoc = []
-        for x in range(so_cot):
-            ky_tu = ban_do[y][x]
-
-            if ky_tu == 'B':
-                x_chuong = x
-                y_chuong = y
-                hang_di_duoc.append(True)
-            elif ky_tu == 'C':
-                x_bessie = x
-                y_bessie = y
-                hang_di_duoc.append(True)
-            elif ky_tu == '.':
-                hang_di_duoc.append(True)
-            else:
-                hang_di_duoc.append(False)
-        di_duoc.append(hang_di_duoc)
-
-    # Buoc 2: BFS tu o cua Bessie
-    khoang_cach = []
-    for y in range(so_hang):
-        hang_khoang_cach = []
-        for x in range(so_cot):
-            hang_khoang_cach.append(-1)
-        khoang_cach.append(hang_khoang_cach)
-    khoang_cach[y_bessie][x_bessie] = 0
-
-    hang_doi = deque()
-    hang_doi.append((x_bessie, y_bessie))
-
-    dx = [1, -1, 0, 0]
-    dy = [0, 0, 1, -1]
-
-    while len(hang_doi) > 0:
-        o_dang_xet = hang_doi.popleft()
-        x = o_dang_xet[0]
-        y = o_dang_xet[1]
-
-        for k in range(4):
-            x_moi = x + dx[k]
-            y_moi = y + dy[k]
-
-            if x_moi >= 0 and x_moi < so_cot and y_moi >= 0 and y_moi < so_hang:
-                if di_duoc[y_moi][x_moi] == True and khoang_cach[y_moi][x_moi] == -1:
-                    khoang_cach[y_moi][x_moi] = khoang_cach[y][x] + 1
-                    hang_doi.append((x_moi, y_moi))
-
-    print(khoang_cach[y_chuong][x_chuong])
-
-
-giai_bai()
+if __name__=="__main__":
+    print(f"bando: {bando}")
+    print(f"diduoc: {diduoc}")
+    solve(x_chuong, y_chuong)
 
 #Thao tác	    Ý nghĩa	                    Tốc độ
 #append(x)	    thêm x vào cuối	            O(1)
