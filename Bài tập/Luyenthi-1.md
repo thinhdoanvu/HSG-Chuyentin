@@ -834,54 +834,105 @@ Bài **BFS** cổ điển trên lưới ô vuông. Xuất phát từ vị trí B
 #include <queue>
 using namespace std;
 
-const int MAXN = 100;
-bool diDuoc[MAXN][MAXN];
+struct OCo
+{
+    int x;
+    int y;
+};
 
-int main() {
-    int r, c;
-    cin >> r >> c;
+char banDo[105][105];
+bool diDuoc[105][105];
+int khoangCach[105][105];
 
-    int xBessie, yBessie, xChuong, yChuong;
+int main()
+{
+    int soHang;
+    int soCot;
+    cin >> soHang >> soCot;
 
-    for (int i = 0; i < r; i++) {
-        for (int j = 0; j < c; j++) {
-            char ch;
-            cin >> ch;
-            if (ch == 'B') { xChuong = j; yChuong = i; diDuoc[i][j] = false; }
-            else if (ch == 'C') { xBessie = j; yBessie = i; diDuoc[i][j] = true; }
-            else if (ch == '.') diDuoc[i][j] = true;
-            else diDuoc[i][j] = false;
-        }
-    }
+    int xBessie = 0;
+    int yBessie = 0;
+    int xChuong = 0;
+    int yChuong = 0;
 
-    int dx[] = {1, -1, 0, 0};
-    int dy[] = {0, 0, 1, -1};
+    // Buoc 1: doc ban do va dung bang diDuoc
+    for (int y = 0; y < soHang; y++)
+    {
+        for (int x = 0; x < soCot; x++)
+        {
+            cin >> banDo[y][x];
+            char kyTu = banDo[y][x];
 
-    queue<pair<int,int>> hangDoi;
-    int khoangCach[MAXN][MAXN];
-    for (int i = 0; i < r; i++)
-        for (int j = 0; j < c; j++)
-            khoangCach[i][j] = -1;
-
-    hangDoi.push({xBessie, yBessie});
-    khoangCach[yBessie][xBessie] = 0;
-
-    while (!hangDoi.empty()) {
-        auto [x, y] = hangDoi.front();
-        hangDoi.pop();
-
-        for (int k = 0; k < 4; k++) {
-            int nx = x + dx[k];
-            int ny = y + dy[k];
-            if (nx >= 0 && nx < c && ny >= 0 && ny < r &&
-                diDuoc[ny][nx] && khoangCach[ny][nx] == -1) {
-                khoangCach[ny][nx] = khoangCach[y][x] + 1;
-                hangDoi.push({nx, ny});
+            if (kyTu == 'B')
+            {
+                xChuong = x;
+                yChuong = y;
+                diDuoc[y][x] = true;
+            }
+            else if (kyTu == 'C')
+            {
+                xBessie = x;
+                yBessie = y;
+                diDuoc[y][x] = true;
+            }
+            else if (kyTu == '.')
+            {
+                diDuoc[y][x] = true;
+            }
+            else
+            {
+                diDuoc[y][x] = false;
             }
         }
     }
 
-    cout << khoangCach[yChuong][xChuong];
+    // Buoc 2: BFS tu o cua Bessie
+    for (int y = 0; y < soHang; y++)
+    {
+        for (int x = 0; x < soCot; x++)
+        {
+            khoangCach[y][x] = -1;
+        }
+    }
+    khoangCach[yBessie][xBessie] = 0;
+
+    queue<OCo> hangDoi;
+    OCo oXuatPhat;
+    oXuatPhat.x = xBessie;
+    oXuatPhat.y = yBessie;
+    hangDoi.push(oXuatPhat);
+
+    int dx[4] = {1, -1, 0, 0};
+    int dy[4] = {0, 0, 1, -1};
+
+    while (!hangDoi.empty())
+    {
+        OCo oDangXet = hangDoi.front();
+        hangDoi.pop();
+        int x = oDangXet.x;
+        int y = oDangXet.y;
+
+        for (int k = 0; k < 4; k++)
+        {
+            int xMoi = x + dx[k];
+            int yMoi = y + dy[k];
+
+            if (xMoi >= 0 && xMoi < soCot && yMoi >= 0 && yMoi < soHang)
+            {
+                if (diDuoc[yMoi][xMoi] == true && khoangCach[yMoi][xMoi] == -1)
+                {
+                    khoangCach[yMoi][xMoi] = khoangCach[y][x] + 1;
+
+                    OCo oMoi;
+                    oMoi.x = xMoi;
+                    oMoi.y = yMoi;
+                    hangDoi.push(oMoi);
+                }
+            }
+        }
+    }
+
+    cout << khoangCach[yChuong][xChuong] << endl;
     return 0;
 }
 ```
@@ -891,36 +942,50 @@ int main() {
 ```python
 from collections import deque
 
-def solve():
-    r, c = map(int, input().split())
+
+def giai_bai():
+    dong_dau = input().split()
+    so_hang = int(dong_dau[0])
+    so_cot = int(dong_dau[1])
 
     ban_do = []
-    for i in range(r):
+    for y in range(so_hang):
         dong = input()
         ban_do.append(dong)
 
-    # Buoc 1: tim vi tri Bessie va vi tri chuong
-    x_bessie, y_bessie = 0, 0
-    x_chuong, y_chuong = 0, 0
-    di_duoc = []
-    for i in range(r):
-        hang = []
-        for j in range(c):
-            ky_tu = ban_do[i][j]
-            if ky_tu == 'B':
-                x_chuong, y_chuong = j, i
-                hang.append(False)
-            elif ky_tu == 'C':
-                x_bessie, y_bessie = j, i
-                hang.append(True)
-            elif ky_tu == '.':
-                hang.append(True)
-            else:
-                hang.append(False)
-        di_duoc.append(hang)
+    x_bessie = 0
+    y_bessie = 0
+    x_chuong = 0
+    y_chuong = 0
 
-    # Buoc 2: BFS tu vi tri Bessie
-    khoang_cach = [[-1] * c for _ in range(r)]
+    # Buoc 1: dung bang di_duoc (True = di duoc, False = da)
+    di_duoc = []
+    for y in range(so_hang):
+        hang_di_duoc = []
+        for x in range(so_cot):
+            ky_tu = ban_do[y][x]
+
+            if ky_tu == 'B':
+                x_chuong = x
+                y_chuong = y
+                hang_di_duoc.append(True)
+            elif ky_tu == 'C':
+                x_bessie = x
+                y_bessie = y
+                hang_di_duoc.append(True)
+            elif ky_tu == '.':
+                hang_di_duoc.append(True)
+            else:
+                hang_di_duoc.append(False)
+        di_duoc.append(hang_di_duoc)
+
+    # Buoc 2: BFS tu o cua Bessie
+    khoang_cach = []
+    for y in range(so_hang):
+        hang_khoang_cach = []
+        for x in range(so_cot):
+            hang_khoang_cach.append(-1)
+        khoang_cach.append(hang_khoang_cach)
     khoang_cach[y_bessie][x_bessie] = 0
 
     hang_doi = deque()
@@ -930,26 +995,29 @@ def solve():
     dy = [0, 0, 1, -1]
 
     while len(hang_doi) > 0:
-        x, y = hang_doi.popleft()
+        o_dang_xet = hang_doi.popleft()
+        x = o_dang_xet[0]
+        y = o_dang_xet[1]
+
         for k in range(4):
-            nx = x + dx[k]
-            ny = y + dy[k]
-            if 0 <= nx < c and 0 <= ny < r:
-                if di_duoc[ny][nx] and khoang_cach[ny][nx] == -1:
-                    khoang_cach[ny][nx] = khoang_cach[y][x] + 1
-                    hang_doi.append((nx, ny))
+            x_moi = x + dx[k]
+            y_moi = y + dy[k]
+
+            if x_moi >= 0 and x_moi < so_cot and y_moi >= 0 and y_moi < so_hang:
+                if di_duoc[y_moi][x_moi] == True and khoang_cach[y_moi][x_moi] == -1:
+                    khoang_cach[y_moi][x_moi] = khoang_cach[y][x] + 1
+                    hang_doi.append((x_moi, y_moi))
 
     print(khoang_cach[y_chuong][x_chuong])
 
-solve()
 
-'''
-Thao tác	Ý nghĩa	Tốc độ
-append(x)	thêm x vào cuối	O(1)
-popleft()	lấy và bỏ phần tử ở đầu	O(1)
-appendleft(x)	thêm x vào đầu	O(1)
-pop()	lấy và bỏ phần tử ở cuối	O(1)
-'''
+giai_bai()
+
+#Thao tác	    Ý nghĩa	                    Tốc độ
+#append(x)	    thêm x vào cuối	            O(1)
+#popleft()	    lấy và bỏ phần tử ở đầu	    O(1)
+#appendleft(x)	thêm x vào đầu	            O(1)
+#pop()	        lấy và bỏ phần tử ở cuối	O(1)
 ```
 
 </details>
