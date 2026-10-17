@@ -681,7 +681,8 @@ def solve():
 
 solve()
 ```
-``` Python, cách đơn giản
+**Python, cách đơn giản**
+``` 
 # s = input().strip()
 # mang chuoi s: 
 # s = '  a  aa   bb cc    def    ghi    '
@@ -716,6 +717,14 @@ for i in range(len(cd)-1):
         
     
 print (f"P = {P}")
+#s ban dau:   a  aa   bb cc    def    ghi    
+#sau khi tach chuoi: ['a', 'aa', 'bb', 'cc', 'def', 'ghi']
+#chieu dai: [1, 2, 2, 2, 3, 3]
+#i = 1, j = 2, dem = 2
+#i = 1, j = 3, dem = 3
+#i = 2, j = 3, dem = 2
+#i = 4, j = 5, dem = 2
+#P = 3
 ```
 
 </details>
