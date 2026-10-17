@@ -681,6 +681,42 @@ def solve():
 
 solve()
 ```
+``` Python, cách đơn giản
+# s = input().strip()
+# mang chuoi s: 
+# s = '  a  aa   bb cc    def    ghi    '
+s = '   a   a a a a bb bb    bb bb c   c   '
+print(f"s ban dau: {s}")
+
+# chuyen s thanh danh sach: 
+s = s.split()
+print(f"sau khi tach chuoi: {s}")
+
+# xay dung mang chieu dai cho danh sach s 
+cd = []
+for i in s:
+    cd.append(len(i))
+print(f"chieu dai: {cd}")
+
+# dung map de dem tan suat cua chieu dai, luu y la cac tu co do dai lien tiep 
+P = 1
+dem = 1
+for i in range(len(cd)-1):
+    for j in range(i+1, len(cd),1):
+        # print(f"i = {i}, j = {j}, dem = {dem}")
+        if cd[i] == cd[j]:
+            dem +=1
+            print(f"i = {i}, j = {j}, dem = {dem}")
+        else: 
+            if P < dem:
+                P = dem
+            i = j
+            dem = 1
+            break
+        
+    
+print (f"P = {P}")
+```
 
 </details>
 
