@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Virus Flashback sinh sản</title>
+<style>
+:root{--bg:#0f1420;--card:#171e2e;--line:#2a3550;--tx:#e6ebf5;--mut:#8e9ab5;--ac:#5eead4;--warn:#fbbf24;--ok:#4ade80;--bad:#f87171;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:system-ui,sans-serif;padding:16px;max-width:1000px;margin:auto}
+h1{font-family:Georgia,serif;font-size:22px;margin:4px 0}
+h2{font-family:Georgia,serif;font-size:17px;margin:0 0 6px}
+p.sub{color:var(--mut);margin:0 0 14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:12px}
+button{background:#22304d;color:var(--tx);border:1px solid var(--line);border-radius:6px;padding:7px 12px;cursor:pointer;font-size:14px}
+button:hover{border-color:var(--ac)} button.on{background:var(--ac);color:#06201c;font-weight:600}
+input[type=text]{background:#0b101b;color:var(--tx);border:1px solid var(--line);border-radius:6px;padding:7px;width:120px;font-family:ui-monospace,monospace}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:8px}
+.lab{color:var(--mut);font-size:13px;margin-top:8px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.chip{border:2px solid var(--line);border-radius:8px;padding:5px 10px;font-family:ui-monospace,monospace;font-size:14px;background:#0b101b}
+.chip.new{border-color:var(--ok);background:#12301f}
+.chip.old{border-color:var(--ac)}
+.vars{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+.v{background:#0b101b;border-radius:8px;padding:8px 14px;text-align:center;font-size:13px;color:var(--mut)}
+.v b{display:block;font-size:20px;font-family:ui-monospace,monospace;color:var(--tx)}
+.msg{min-height:50px;line-height:1.55;margin-top:8px}
+table{border-collapse:collapse;margin-top:8px;font-family:ui-monospace,monospace;font-size:14px}
+th,td{border:1px solid var(--line);padding:5px 12px;text-align:right}
+th{color:var(--mut);font-weight:normal}
+tr.cur td{background:#2b2a12}
+.mats{display:flex;gap:18px;flex-wrap:wrap;margin:8px 0}
+.mat{background:#0b101b;border-radius:8px;padding:8px 12px}
+.mat .t{font-size:12px;color:var(--mut);margin-bottom:4px}
+.mat table{margin:0}
+.bits{display:flex;gap:4px;flex-wrap:wrap;margin:6px 0}
+.bit{width:28px;height:34px;border:2px solid var(--line);border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:ui-monospace,monospace}
+.bit.cur{border-color:var(--warn);box-shadow:0 0 0 2px var(--warn)}
+.bit.past{opacity:.35}
+pre{background:#0b101b;border-radius:8px;padding:12px;overflow:auto;font-size:13px;line-height:1.5;margin:8px 0 0}
+.ok{color:var(--ok)} .warn{color:var(--warn)} .bad{color:var(--bad)} .hl{color:var(--ac)}
+.tabs{display:flex;gap:8px;margin-bottom:12px}
+.note{background:#0b101b;border-radius:8px;padding:10px;line-height:1.6;margin-top:8px}
+.err{color:var(--bad);font-size:13px}
+</style>
+</head>
+<body>
+<h1>Virus Flashback sinh sản</h1>
+<p class="sub">Ngày 0 có n cá thể mức 1. Mỗi ngày: cá thể mức i sinh ra i cá thể mức 1 (chỉ sinh sôi từ ngày sau), rồi chính nó lên mức i+1. Hỏi sau k ngày có bao nhiêu cá thể (mod 10⁹+7)?</p>
+
+<div class="tabs">
+  <button class="on" id="tabA">1. Mô phỏng từng ngày (k nhỏ)</button>
+  <button id="tabB">2. Tính nhanh khi k rất lớn</button>
+</div>
+
+<div id="partA">
+  <div class="card">
+    <div class="row" id="presA"></div>
+    <div class="row">n = <input type="text" id="inNA" maxlength="2" style="width:60px"> k = <input type="text" id="inKA" maxlength="1" style="width:60px">
+      <button id="loadA">Áp dụng</button><span class="lab" style="margin:0">(demo: n ≤ 10, k ≤ 8)</span></div>
+  </div>
+  <div class="card">
+    <div class="lab" style="margin-top:0">Đầu ngày (mức: số cá thể)</div>
+    <div class="chips" id="before"></div>
+    <div class="lab">Trong ngày: mỗi cá thể mức i sinh i cá thể mức 1 <span class="ok">(xanh = cá thể mới sinh)</span>, rồi cả mức lên i+1</div>
+    <div class="chips" id="after"></div>
+    <div class="vars">
+      <div class="v">ngày<b id="vday">0</b></div>
+      <div class="v">T = tổng cá thể<b id="vT" class="ok">0</b></div>
+      <div class="v">S = tổng các mức<b id="vS">0</b></div>
+    </div>
+    <div class="msg" id="msgA"></div>
+    <table id="tblA"></table>
+    <div class="note" id="noteA"></div>
+    <div class="row" style="margin-top:12px">
+      <button id="prevA">◀ Lùi</button><button id="nextA">Ngày tiếp ▶</button>
+      <button id="autoA">▶ Tự chạy</button><button id="endA">⏭ Đến cuối</button><button id="resetA">↺ Đặt lại</button>
+    </div>
+  </div>
+</div>
+
+<div id="partB" style="display:none">
+  <div class="card">
+    <h2>Từ quy luật đến công thức</h2>
+    <div class="note">
+      Gọi <b>T</b> = số cá thể, <b>S</b> = tổng các mức của mọi cá thể. Sang ngày sau:<br>
+      • số cá thể mới sinh = tổng các mức = S, nên <b class="hl">T' = T + S</b><br>
+      • mọi cá thể cũ lên 1 mức (T cá thể) và S cá thể mới đều mức 1: <b class="hl">S' = S + T + S = T + 2S</b><br>
+      Bắt đầu (T, S) = (1, 1) cho mỗi cá thể ban đầu. Ghi bằng ma trận: (T', S') = M·(T, S) với <b>M = [[1,1],[1,2]]</b>.<br>
+      Sau k ngày: (T, S) = M<sup>k</sup>·(1, 1), và đáp án = <b>n × T mod (10⁹+7)</b>. (Chuỗi T: 1, 2, 5, 13, 34, 89, … chính là số Fibonacci F(2k+1).)<br>
+      Lặp k lần thì chậm khi k đến 10⁹, nên tính M<sup>k</sup> bằng <b>luỹ thừa nhị phân</b>: chỉ khoảng 30 bước.
+    </div>
+    <div class="row" style="margin-top:10px" id="presB"></div>
+    <div class="row">n = <input type="text" id="inNB" maxlength="4" style="width:70px"> k = <input type="text" id="inKB" maxlength="10">
+      <button id="loadB">Áp dụng</button></div>
+    <div class="err" id="errB"></div>
+  </div>
+  <div class="card">
+    <div class="lab" style="margin-top:0">k viết nhị phân (đọc từ bit thấp nhất bên phải)</div>
+    <div class="bits" id="bits"></div>
+    <div class="vars">
+      <div class="v">k còn lại<b id="vk">-</b></div>
+      <div class="v">bit thấp nhất<b id="vb">-</b></div>
+    </div>
+    <div class="mats" id="mats"></div>
+    <div class="msg" id="msgB"></div>
+    <div class="row" style="margin-top:12px">
+      <button id="prevB">◀ Lùi</button><button id="nextB">Bước tiếp ▶</button>
+      <button id="autoB">▶ Tự chạy</button><button id="endB">⏭ Đến cuối</button><button id="resetB">↺ Đặt lại</button>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="row"><button class="on" id="tcpp">C++</button><button id="tpy">Python</button>
+    <span class="lab" style="margin:0">Code của phần 2 (luỹ thừa ma trận), chạy được với k đến 10⁹.</span></div>
+  <pre id="code"></pre>
+</div>
+
+<script>
+var MOD=1000000007n;
+var CPP=
+"#include <iostream>\nusing namespace std;\n\nconst long long MOD = 1000000007LL;\n\nstruct Mat {\n    long long a, b, c, d;       // ma trận [[a, b], [c, d]]\n};\n\n"+
+"Mat nhan(Mat X, Mat Y) {\n    Mat Z;\n    Z.a = (X.a * Y.a + X.b * Y.c) % MOD;\n    Z.b = (X.a * Y.b + X.b * Y.d) % MOD;\n    Z.c = (X.c * Y.a + X.d * Y.c) % MOD;\n    Z.d = (X.c * Y.b + X.d * Y.d) % MOD;\n    return Z;\n}\n\n"+
+"int main() {\n    long long n, k;\n    cin >> n >> k;\n\n    Mat res = {1, 0, 0, 1};     // ma trận đơn vị\n    Mat pw = {1, 1, 1, 2};      // M: (T, S) -> (T + S, T + 2S)\n\n"+
+"    while (k > 0) {\n        if (k % 2 == 1) {\n            res = nhan(res, pw);\n        }\n        pw = nhan(pw, pw);\n        k = k / 2;\n    }\n\n"+
+"    long long T = (res.a + res.b) % MOD;    // vector đầu (T, S) = (1, 1)\n    long long ans = (n % MOD) * T % MOD;\n    cout << ans << endl;\n    return 0;\n}\n";
+var PY=
+"MOD = 10 ** 9 + 7\n\n\ndef nhan(X, Y):\n    a = (X[0] * Y[0] + X[1] * Y[2]) % MOD\n    b = (X[0] * Y[1] + X[1] * Y[3]) % MOD\n    c = (X[2] * Y[0] + X[3] * Y[2]) % MOD\n    d = (X[2] * Y[1] + X[3] * Y[3]) % MOD\n    return (a, b, c, d)\n\n\n"+
+"n, k = map(int, input().split())\n\nres = (1, 0, 0, 1)      # ma trận đơn vị\npw = (1, 1, 1, 2)       # M: (T, S) -> (T + S, T + 2S)\n\n"+
+"while k > 0:\n    if k % 2 == 1:\n        res = nhan(res, pw)\n    pw = nhan(pw, pw)\n    k = k // 2\n\nT = (res[0] + res[1]) % MOD\nprint(n % MOD * T % MOD)\n";
+
+/* ---------- Phần 1: mô phỏng ---------- */
+var nA=1,kA=3,stepsA=[],posA=0,timerA=null;
+
+function levelsToChips(lv,newCount){
+  var keys=Object.keys(lv).map(Number).sort(function(a,b){return a-b;}),h="";
+  keys.forEach(function(i){
+    if(lv[i]>0)h+="<span class='chip'>mức "+i+": ×"+lv[i]+"</span>";
+  });
+  return h;
+}
+function buildA(){
+  stepsA=[];
+  var lv={1:nA},T=nA,S=nA;
+  var rows=[{d:0,T:T,S:S}];
+  stepsA.push({day:0,before:null,after:lv,T:T,S:S,rows:rows.slice(),spawn:0,
+    msg:"Ngày 0: có <b>"+nA+"</b> cá thể mức 1. T = "+T+", S = "+S+"."});
+  for(var d=1;d<=kA;d++){
+    var prev=lv,spawn=0,nl={},i;
+    for(i in prev){spawn+=Number(i)*prev[i];}
+    for(i in prev){nl[Number(i)+1]=(nl[Number(i)+1]||0)+prev[i];}
+    var newL1=spawn;
+    var oldT=T,oldS=S;
+    nl[1]=(nl[1]||0)+newL1;
+    var nT=0,nS=0;
+    for(i in nl){nT+=nl[i];nS+=Number(i)*nl[i];}
+    lv=nl;T=nT;S=nS;
+    rows.push({d:d,T:T,S:S});
+    stepsA.push({day:d,before:prev,after:nl,newL1:newL1,T:T,S:S,rows:rows.slice(),spawn:spawn,
+      msg:"Sang ngày <b>"+d+"</b>: các cá thể cũ sinh ra tổng cộng Σ(mức × số lượng) = <b class='warn'>"+oldS+"</b> cá thể mức 1 mới (đúng bằng S cũ). Mọi cá thể cũ lên 1 mức. Vậy T = "+oldT+" + "+oldS+" = <b class='ok'>"+T+"</b>, S = "+oldT+" + 2×"+oldS+" = <b>"+S+"</b>."});
+  }
+  posA=0;renderA();
+}
+function renderA(){
+  var st=stepsA[posA];
+  var bh="",ah="";
+  if(st.before){
+    var bk=Object.keys(st.before).map(Number).sort(function(a,b){return a-b;});
+    bk.forEach(function(i){bh+="<span class='chip old'>mức "+i+": ×"+st.before[i]+"</span>";});
+    var ak=Object.keys(st.after).map(Number).sort(function(a,b){return a-b;});
+    ak.forEach(function(i){
+      var isNew=(i===1);
+      var txt="mức "+i+": ×"+st.after[i];
+      if(isNew&&st.newL1>0){
+        var old1=st.after[1]-st.newL1;
+        txt="mức 1: ×"+st.after[1]+(old1>0?" (gồm "+st.newL1+" mới)":" (toàn mới)");
+      }
+      ah+="<span class='chip"+(isNew?" new":"")+"'>"+txt+"</span>";
+    });
+  }else{
+    bh="<span class='chip old'>mức 1: ×"+st.after[1]+"</span>";
+    ah="<span style='color:var(--mut)'>(chưa có ngày nào trôi qua)</span>";
+  }
+  document.getElementById("before").innerHTML=bh;
+  document.getElementById("after").innerHTML=ah;
+  document.getElementById("vday").textContent=st.day;
+  document.getElementById("vT").textContent=st.T;
+  document.getElementById("vS").textContent=st.S;
+  document.getElementById("msgA").innerHTML=st.msg;
+  var t="<tr><th>ngày</th><th>T (số cá thể)</th><th>S (tổng mức)</th><th>T/n</th></tr>";
+  st.rows.forEach(function(r,idx){
+    t+="<tr"+(idx===st.rows.length-1?" class='cur'":"")+"><td>"+r.d+"</td><td>"+r.T+"</td><td>"+r.S+"</td><td>"+(r.T/nA)+"</td></tr>";
+  });
+  document.getElementById("tblA").innerHTML=t;
+  var seq=[];
+  st.rows.forEach(function(r){seq.push(r.T/nA);});
+  document.getElementById("noteA").innerHTML="Mỗi cá thể ban đầu cho ra: <b>"+seq.join(", ")+"</b>"+(seq.length>=3?" … đây là F(1), F(3), F(5), F(7), … của dãy Fibonacci (1, 1, 2, 3, 5, 8, 13, 21, 34, …). Sau k ngày: <b>T = n × F(2k+1)</b>.":".");
+}
+function stopA(){if(timerA){clearInterval(timerA);timerA=null;document.getElementById("autoA").textContent="▶ Tự chạy";}}
+function nextA(){if(posA<stepsA.length-1){posA++;renderA();}else stopA();}
+function loadA(){
+  stopA();
+  var a=parseInt(document.getElementById("inNA").value,10),b=parseInt(document.getElementById("inKA").value,10);
+  if(isNaN(a)||a<1)a=1; if(a>10)a=10;
+  if(isNaN(b)||b<1)b=3; if(b>8)b=8;
+  nA=a;kA=b;
+  document.getElementById("inNA").value=nA;document.getElementById("inKA").value=kA;
+  buildA();
+}
+
+/* ---------- Phần 2: luỹ thừa ma trận ---------- */
+var nB=1000n,kB=10n,stepsB=[],posB=0,timerB=null,bitStr="";
+function mul(X,Y){
+  return [(X[0]*Y[0]+X[1]*Y[2])%MOD,(X[0]*Y[1]+X[1]*Y[3])%MOD,(X[2]*Y[0]+X[3]*Y[2])%MOD,(X[2]*Y[1]+X[3]*Y[3])%MOD];
+}
+function buildB(){
+  stepsB=[];
+  bitStr=kB.toString(2);
+  var res=[1n,0n,0n,1n],pw=[1n,1n,1n,2n],k=kB,idx=0;
+  stepsB.push({res:res.slice(),pw:pw.slice(),k:k,bit:null,bi:-1,
+    msg:"Bắt đầu: res = ma trận đơn vị I, pw = M = [[1,1],[1,2]], k = "+k+" = ("+bitStr+")₂."});
+  while(k>0n){
+    var b=k%2n,m="";
+    var bi=bitStr.length-1-idx;
+    if(b===1n){
+      res=mul(res,pw);
+      m="Bit thấp nhất của k là <b class='ok'>1</b> ⇒ res = res × pw. ";
+    }else m="Bit thấp nhất của k là <b class='warn'>0</b> ⇒ không nhân vào res. ";
+    var kShow=k;
+    pw=mul(pw,pw);
+    k=k/2n;
+    m+="Rồi bình phương pw (pw = M^"+("2^"+(idx+1))+") và chia đôi k ⇒ k = "+k+".";
+    stepsB.push({res:res.slice(),pw:pw.slice(),k:kShow,bit:b,bi:bi,msg:m,after:k});
+    idx++;
+  }
+  var T=(res[0]+res[1])%MOD,ans=(nB%MOD)*T%MOD;
+  stepsB.push({res:res.slice(),pw:pw.slice(),k:0n,bit:null,bi:-2,
+    msg:"k = 0, dừng. res = M<sup>k</sup>. T = res[0][0] + res[0][1] = "+res[0]+" + "+res[1]+" = <b>"+T+"</b> (mod p). <b class='ok'>Đáp án = n × T mod p = "+nB+" × "+T+" mod (10⁹+7) = "+ans+"</b>."});
+  posB=0;renderB();
+}
+function matHtml(title,M){
+  return "<div class='mat'><div class='t'>"+title+"</div><table><tr><td>"+M[0]+"</td><td>"+M[1]+"</td></tr><tr><td>"+M[2]+"</td><td>"+M[3]+"</td></tr></table></div>";
+}
+function renderB(){
+  var st=stepsB[posB],h="",L=bitStr.length;
+  for(var q=0;q<L;q++){
+    var bi=L-1-q;      /* vị trí bit tính từ phải */
+    var cl="bit";
+    if(st.bi===bi)cl+=" cur";
+    else if(st.bi>=0&&bi>st.bi)cl+=" past";
+    else if(st.bi===-2)cl+=" past";
+    h+="<div class='"+cl+"'>"+bitStr.charAt(q)+"</div>";
+  }
+  document.getElementById("bits").innerHTML=h;
+  document.getElementById("vk").textContent=st.k.toString();
+  document.getElementById("vb").textContent=st.bit===null?"-":st.bit.toString();
+  document.getElementById("mats").innerHTML=matHtml("res (kết quả tích luỹ, mod p)",st.res)+matHtml("pw (M^(2^t), mod p)",st.pw);
+  document.getElementById("msgB").innerHTML=st.msg;
+}
+function stopB(){if(timerB){clearInterval(timerB);timerB=null;document.getElementById("autoB").textContent="▶ Tự chạy";}}
+function nextB(){if(posB<stepsB.length-1){posB++;renderB();}else stopB();}
+function loadB(){
+  stopB();
+  var a=document.getElementById("inNB").value.replace(/\D/g,""),b=document.getElementById("inKB").value.replace(/\D/g,"");
+  var err=document.getElementById("errB"),msg="";
+  var na=a===""?1000n:BigInt(a),kb=b===""?10n:BigInt(b);
+  if(na<1n||na>1000n){na=1000n;msg="n phải từ 1 đến 1000. ";}
+  if(kb<1n||kb>1000000000n){kb=10n;msg+="k phải từ 1 đến 10⁹. ";}
+  err.textContent=msg;
+  nB=na;kB=kb;
+  document.getElementById("inNB").value=nB.toString();document.getElementById("inKB").value=kB.toString();
+  buildB();
+}
+
+/* ---------- khởi tạo ---------- */
+(function init(){
+  var pa=[{n:"n=1, k=3 → 13",a:1,b:3},{n:"n=2, k=4 → 68",a:2,b:4},{n:"n=1, k=6",a:1,b:6}];
+  var boxA=document.getElementById("presA");
+  pa.forEach(function(q){var bt=document.createElement("button");bt.textContent=q.n;
+    bt.onclick=function(){document.getElementById("inNA").value=q.a;document.getElementById("inKA").value=q.b;loadA();};boxA.appendChild(bt);});
+  var pb=[{n:"n=1, k=3",a:1,b:3},{n:"n=1000, k=10",a:1000,b:10},{n:"n=7, k=123456789",a:7,b:123456789},{n:"n=1000, k=10⁹",a:1000,b:1000000000}];
+  var boxB=document.getElementById("presB");
+  pb.forEach(function(q){var bt=document.createElement("button");bt.textContent=q.n;
+    bt.onclick=function(){document.getElementById("inNB").value=q.a;document.getElementById("inKB").value=q.b;loadB();};boxB.appendChild(bt);});
+
+  document.getElementById("loadA").onclick=loadA;
+  document.getElementById("nextA").onclick=function(){stopA();nextA();};
+  document.getElementById("prevA").onclick=function(){stopA();if(posA>0){posA--;renderA();}};
+  document.getElementById("resetA").onclick=function(){stopA();posA=0;renderA();};
+  document.getElementById("endA").onclick=function(){stopA();posA=stepsA.length-1;renderA();};
+  document.getElementById("autoA").onclick=function(){
+    if(timerA){stopA();return;}
+    if(posA>=stepsA.length-1)posA=0;
+    document.getElementById("autoA").textContent="⏸ Dừng";timerA=setInterval(nextA,1400);};
+
+  document.getElementById("loadB").onclick=loadB;
+  document.getElementById("nextB").onclick=function(){stopB();nextB();};
+  document.getElementById("prevB").onclick=function(){stopB();if(posB>0){posB--;renderB();}};
+  document.getElementById("resetB").onclick=function(){stopB();posB=0;renderB();};
+  document.getElementById("endB").onclick=function(){stopB();posB=stepsB.length-1;renderB();};
+  document.getElementById("autoB").onclick=function(){
+    if(timerB){stopB();return;}
+    if(posB>=stepsB.length-1)posB=0;
+    document.getElementById("autoB").textContent="⏸ Dừng";timerB=setInterval(nextB,1000);};
+
+  function tabP(w){
+    document.getElementById("partA").style.display=w==="A"?"block":"none";
+    document.getElementById("partB").style.display=w==="B"?"block":"none";
+    document.getElementById("tabA").className=w==="A"?"on":"";
+    document.getElementById("tabB").className=w==="B"?"on":"";
+  }
+  document.getElementById("tabA").onclick=function(){tabP("A");};
+  document.getElementById("tabB").onclick=function(){tabP("B");};
+
+  function tab(w){
+    document.getElementById("code").textContent=w==="cpp"?CPP:PY;
+    document.getElementById("tcpp").className=w==="cpp"?"on":"";
+    document.getElementById("tpy").className=w==="py"?"on":"";
+  }
+  document.getElementById("tcpp").onclick=function(){tab("cpp");};
+  document.getElementById("tpy").onclick=function(){tab("py");};
+  tab("cpp");
+
+  document.getElementById("inNA").value=1;document.getElementById("inKA").value=3;loadA();
+  document.getElementById("inNB").value=1000;document.getElementById("inKB").value=10;loadB();
+})();
+</script>
+</body>
+</html>
