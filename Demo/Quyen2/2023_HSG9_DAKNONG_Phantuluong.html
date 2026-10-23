@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Phân tử lượng từ công thức hoá học</title>
+<style>
+:root{--bg:#0f1420;--card:#171e2e;--line:#2a3550;--tx:#e6ebf5;--mut:#8e9ab5;--ac:#5eead4;--warn:#fbbf24;--ok:#4ade80;--bad:#f87171;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:system-ui,sans-serif;padding:16px;max-width:1000px;margin:auto}
+h1{font-family:Georgia,serif;font-size:22px;margin:4px 0}
+p.sub{color:var(--mut);margin:0 0 14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:12px}
+button{background:#22304d;color:var(--tx);border:1px solid var(--line);border-radius:6px;padding:7px 12px;cursor:pointer;font-size:14px}
+button:hover{border-color:var(--ac)} button.on{background:var(--ac);color:#06201c;font-weight:600}
+input[type=text]{background:#0b101b;color:var(--tx);border:1px solid var(--line);border-radius:6px;padding:7px;width:240px;font-family:ui-monospace,monospace}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:8px}
+.tbl{display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 10px}
+.at{background:#0b101b;border-radius:8px;padding:5px 12px;font-size:14px}
+.at b{font-family:ui-monospace,monospace;color:var(--ac)}
+.str{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.ch{width:40px;height:50px;border:2px solid var(--line);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:ui-monospace,monospace;font-size:20px;opacity:.5}
+.ch small{font-size:10px;color:var(--mut)}
+.ch.done{opacity:1}
+.ch.letter.done{background:#0f3a35;border-color:var(--ac)}
+.ch.digit.done{background:#2b2a12;border-color:var(--warn)}
+.ch.cur{opacity:1;box-shadow:0 0 0 3px var(--warn);border-color:var(--warn)}
+.vars{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+.v{background:#0b101b;border-radius:8px;padding:8px 14px;text-align:center;font-size:13px;color:var(--mut);min-width:80px}
+.v b{display:block;font-size:22px;font-family:ui-monospace,monospace;color:var(--tx)}
+.msg{min-height:50px;line-height:1.5;margin-top:8px}
+.lab{color:var(--mut);font-size:13px;margin-top:6px}
+.log{font-family:ui-monospace,monospace;font-size:14px;line-height:1.7}
+.log div{border-left:3px solid var(--ok);padding-left:8px;margin:2px 0}
+.code{background:#0b101b;border-radius:8px;padding:8px 0;font-family:ui-monospace,monospace;font-size:13px;line-height:1.55;overflow:auto;margin-top:8px}
+.ln{display:flex;white-space:pre;padding:0 12px;border-left:4px solid transparent}
+.ln span.no{color:#4a5675;width:28px;display:inline-block;flex:none}
+.ln.hl{background:#2b2a12;border-left-color:var(--warn)}
+.ok{color:var(--ok)} .warn{color:var(--warn)} .bad{color:var(--bad)} .hl2{color:var(--ac)}
+.err{color:var(--bad);font-size:13px}
+</style>
+</head>
+<body>
+<h1>Phân tử lượng từ công thức hoá học</h1>
+<p class="sub">Đọc công thức từng ký tự: chữ cái là một nguyên tố mới, chữ số được ghép dần thành số lần lặp. Khi gặp nguyên tố kế tiếp (hoặc hết xâu) thì cộng khối lượng nguyên tố trước đó.</p>
+
+<div class="card">
+  <div class="tbl">
+    <div class="at">H = <b>1</b></div><div class="at">C = <b>12</b></div><div class="at">N = <b>14</b></div><div class="at">O = <b>16</b></div>
+  </div>
+  <div class="row" id="presets"></div>
+  <div class="row">
+    <input type="text" id="inp" maxlength="30" placeholder="Công thức, ví dụ N2O3">
+    <button id="load">Áp dụng</button>
+  </div>
+  <div class="err" id="err"></div>
+</div>
+
+<div class="card">
+  <div class="str" id="str"></div>
+  <div class="vars">
+    <div class="v">i<b id="vi">-</b></div>
+    <div class="v">c (nguyên tố chờ)<b id="vc">' '</b></div>
+    <div class="v">x (số lần)<b id="vx">0</b></div>
+    <div class="v">res (phân tử lượng)<b id="vr" class="ok">0</b></div>
+  </div>
+  <div class="msg" id="msg"></div>
+  <div class="lab">Các nguyên tố đã cộng:</div>
+  <div class="log" id="log"></div>
+  <div class="row" style="margin-top:12px">
+    <button id="prev">◀ Lùi</button>
+    <button id="next">Bước tiếp ▶</button>
+    <button id="auto">▶ Tự chạy</button>
+    <button id="end">⏭ Chạy đến cuối</button>
+    <button id="reset">↺ Đặt lại</button>
+  </div>
+</div>
+
+<div class="card">
+  <div class="row"><button class="on" id="tcpp">C++</button><button id="tpy">Python</button>
+  <span class="lab">Dòng được tô vàng là dòng code đang chạy ở bước hiện tại.</span></div>
+  <div class="code" id="code"></div>
+</div>
+
+<script>
+var PRESETS=[{n:"N2O3 → 76",s:"N2O3"},{n:"CH4 (không có số 1)",s:"CH4"},{n:"C2H5OH",s:"C2H5OH"},{n:"N1000",s:"N1000"},{n:"C12H22O11",s:"C12H22O11"}];
+
+var CPP=[
+ ["#include <iostream>",""],["#include <string>",""],["using namespace std;",""],["",""],
+ ["int khoiLuong(char c) {","kl"],["    if (c == 'H') {","kl"],["        return 1;","kl"],["    }","kl"],
+ ["    if (c == 'C') {","kl"],["        return 12;","kl"],["    }","kl"],
+ ["    if (c == 'N') {","kl"],["        return 14;","kl"],["    }","kl"],
+ ["    return 16;          // còn lại là O","kl"],["}","kl"],["",""],
+ ["int main() {",""],
+ ["    string s;","init"],["    cin >> s;","init"],
+ ["    int x = 0;                 // số lần lặp đang đọc","init"],
+ ["    char c = ' ';              // nguyên tố đang chờ cộng","init"],
+ ["    long long res = 0;","init"],["",""],
+ ["    for (int i = 0; i < (int)s.size(); i++) {","loop"],
+ ["        if (s[i] >= '0' && s[i] <= '9') {","isdigit"],
+ ["            x = x * 10 + (s[i] - '0');","adddigit"],
+ ["        } else {","else"],
+ ["            if (c != ' ') {","check"],
+ ["                if (x == 0) {","defcheck"],
+ ["                    x = 1;      // không có số = 1 nguyên tử","defaultx"],
+ ["                }","defcheck"],
+ ["                res = res + khoiLuong(c) * x;","add"],
+ ["            }","check"],
+ ["            x = 0;","resetx"],
+ ["            c = s[i];","setc"],
+ ["        }",""],["    }",""],["",""],
+ ["    // nguyên tố cuối cùng chưa được cộng","endcheck"],
+ ["    if (c != ' ') {","endcheck"],
+ ["        if (x == 0) {","enddef"],["            x = 1;","enddef"],["        }","enddef"],
+ ["        res = res + khoiLuong(c) * x;","endadd"],
+ ["    }","endcheck"],
+ ["    cout << res << endl;","print"],
+ ["    return 0;",""],["}",""]
+];
+var PY=[
+ ["def khoi_luong(c):","kl"],["    if c == 'H':","kl"],["        return 1","kl"],
+ ["    if c == 'C':","kl"],["        return 12","kl"],
+ ["    if c == 'N':","kl"],["        return 14","kl"],
+ ["    return 16          # còn lại là O","kl"],["",""],["",""],
+ ["s = input().strip()","init"],
+ ["x = 0                 # số lần lặp đang đọc","init"],
+ ["c = ' '               # nguyên tố đang chờ cộng","init"],
+ ["res = 0","init"],["",""],
+ ["for i in range(len(s)):","loop"],
+ ["    if s[i] >= '0' and s[i] <= '9':","isdigit"],
+ ["        x = x * 10 + int(s[i])","adddigit"],
+ ["    else:","else"],
+ ["        if c != ' ':","check"],
+ ["            if x == 0:","defcheck"],
+ ["                x = 1  # không có số = 1 nguyên tử","defaultx"],
+ ["            res = res + khoi_luong(c) * x","add"],
+ ["        x = 0","resetx"],
+ ["        c = s[i]","setc"],["",""],
+ ["# nguyên tố cuối cùng chưa được cộng","endcheck"],
+ ["if c != ' ':","endcheck"],
+ ["    if x == 0:","enddef"],["        x = 1","enddef"],
+ ["    res = res + khoi_luong(c) * x","endadd"],
+ ["print(res)","print"]
+];
+
+var W={H:1,C:12,N:14,O:16};
+var s="N2O3",steps=[],pos=0,timer=null,lang="cpp";
+
+function build(){
+  steps=[];
+  var x=0,c=" ",res=0,log=[];
+  function snap(i,keys,msg,cur){steps.push({i:i,c:c,x:x,res:res,log:log.slice(),keys:keys,msg:msg});}
+  snap(-1,["init"],"Khởi tạo: x = 0, c = ' ' (chưa có nguyên tố nào), res = 0.");
+  for(var i=0;i<s.length;i++){
+    var ch=s.charAt(i);
+    if(ch>="0"&&ch<="9"){
+      var old=x;x=x*10+(ch.charCodeAt(0)-48);
+      snap(i,["loop","isdigit","adddigit"],"Ký tự <b>'"+ch+"'</b> là chữ số ⇒ x = "+old+" × 10 + "+ch+" = <b class='warn'>"+x+"</b>. (Ghép dần: '1','0','0','0' → 1 → 10 → 100 → 1000.)");
+    }else{
+      var m="Ký tự <b>'"+ch+"'</b> là chữ cái ⇒ một nguyên tố mới. ";
+      var keys=["loop","isdigit","else","check"];
+      if(c!==" "){
+        var used=x;
+        if(x===0){keys.push("defcheck","defaultx");used=1;x=1;m+="Nguyên tố chờ là <b>"+c+"</b> mà x = 0 (không có số) ⇒ hiểu là <b>1</b> nguyên tử. ";}
+        keys.push("add","kl");
+        var add=W[c]*used;res+=add;
+        log.push(c+" × "+used+" = "+W[c]+" × "+used+" = "+add);
+        m+="Cộng <b>"+c+"</b>: "+W[c]+" × "+used+" = <span class='ok'>"+add+"</span> ⇒ res = "+res+". ";
+      }else{
+        m+="Chưa có nguyên tố nào đang chờ ⇒ chưa cộng gì. ";
+      }
+      x=0;
+      keys.push("resetx","setc");
+      var prevC=c;c=ch;
+      snap(i,keys,m+"Đặt x = 0 và c = '"+c+"' để chờ đọc số lần của nó.");
+    }
+  }
+  var m2="Hết xâu. Nguyên tố cuối <b>"+c+"</b> chưa được cộng vì vòng for chỉ cộng khi gặp nguyên tố KẾ TIẾP. ";
+  var k2=["endcheck"];
+  var u=x;
+  if(c!==" "){
+    if(x===0){k2.push("enddef");u=1;x=1;m2+="x = 0 ⇒ hiểu là 1. ";}
+    k2.push("endadd","kl");
+    var a2=W[c]*u;res+=a2;
+    log.push(c+" × "+u+" = "+W[c]+" × "+u+" = "+a2);
+    m2+="Cộng "+c+": "+W[c]+" × "+u+" = <span class='ok'>"+a2+"</span>.";
+  }
+  snap(s.length,k2,m2);
+  snap(s.length,["print"],"In ra <b class='ok'>phân tử lượng = "+res+"</b>.");
+  pos=0;render();
+}
+
+function renderCode(keys){
+  var arr=(lang==="cpp")?CPP:PY,h="";
+  for(var k=0;k<arr.length;k++){
+    var on=(arr[k][1]!==""&&keys.indexOf(arr[k][1])>=0);
+    var t=arr[k][0].replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    h+="<div class='ln"+(on?" hl":"")+"'><span class='no'>"+(k+1)+"</span>"+t+"</div>";
+  }
+  document.getElementById("code").innerHTML=h;
+}
+
+function render(){
+  var st=steps[pos],h="";
+  for(var k=0;k<s.length;k++){
+    var isD=(s.charAt(k)>="0"&&s.charAt(k)<="9");
+    var cl="ch "+(isD?"digit":"letter");
+    if(k<st.i||(k===st.i&&pos>=0))cl+=" done";
+    if(k===st.i&&st.i<s.length&&pos<steps.length-2)cl+=" cur";
+    h+="<div class='"+cl+"'>"+s.charAt(k)+"<small>"+k+"</small></div>";
+  }
+  document.getElementById("str").innerHTML=h;
+  document.getElementById("vi").textContent=(st.i>=0&&st.i<s.length)?st.i:"-";
+  document.getElementById("vc").textContent="'"+st.c+"'";
+  document.getElementById("vx").textContent=st.x;
+  document.getElementById("vr").textContent=st.res;
+  document.getElementById("msg").innerHTML=st.msg;
+  var lg="";
+  st.log.forEach(function(t){lg+="<div>"+t+"</div>";});
+  document.getElementById("log").innerHTML=lg;
+  renderCode(st.keys);
+  var hl=document.querySelector(".ln.hl");
+  if(hl){var box=document.getElementById("code");box.scrollTop=Math.max(0,hl.offsetTop-box.offsetTop-60);}
+}
+
+function stop(){if(timer){clearInterval(timer);timer=null;document.getElementById("auto").textContent="▶ Tự chạy";}}
+function next(){if(pos<steps.length-1){pos++;render();}else stop();}
+function load(){
+  stop();
+  var v=document.getElementById("inp").value.replace(/\s/g,"").toUpperCase();
+  var err=document.getElementById("err");
+  if(v===""||!/^([HCNO][0-9]*)+$/.test(v)){
+    err.textContent="Công thức chỉ gồm H, C, N, O và chữ số, bắt đầu bằng chữ cái (ví dụ N2O3). Đang dùng N2O3.";
+    v="N2O3";
+  }else if(v.length>30){
+    err.textContent="Tối đa 30 ký tự. Đang dùng N2O3.";v="N2O3";
+  }else err.textContent="";
+  document.getElementById("inp").value=v;
+  s=v;build();
+}
+
+(function init(){
+  var box=document.getElementById("presets");
+  PRESETS.forEach(function(q){
+    var bt=document.createElement("button");bt.textContent=q.n;
+    bt.onclick=function(){document.getElementById("inp").value=q.s;load();};
+    box.appendChild(bt);
+  });
+  document.getElementById("load").onclick=load;
+  document.getElementById("next").onclick=function(){stop();next();};
+  document.getElementById("prev").onclick=function(){stop();if(pos>0){pos--;render();}};
+  document.getElementById("reset").onclick=function(){stop();pos=0;render();};
+  document.getElementById("end").onclick=function(){stop();pos=steps.length-1;render();};
+  document.getElementById("auto").onclick=function(){
+    if(timer){stop();return;}
+    if(pos>=steps.length-1)pos=0;
+    document.getElementById("auto").textContent="⏸ Dừng";
+    timer=setInterval(next,1100);
+  };
+  function tab(w){
+    lang=w;
+    document.getElementById("tcpp").className=w==="cpp"?"on":"";
+    document.getElementById("tpy").className=w==="py"?"on":"";
+    render();
+  }
+  document.getElementById("tcpp").onclick=function(){tab("cpp");};
+  document.getElementById("tpy").onclick=function(){tab("py");};
+  document.getElementById("inp").value="N2O3";
+  load();
+})();
+</script>
+</body>
+</html>
